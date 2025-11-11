@@ -1,0 +1,947 @@
+"use client"
+
+import type React from "react"
+import { useState, useRef, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { CurrencyInput } from "@/components/ui/currency-input"
+import { CurrencyInputUSD } from "@/components/ui/currency-input-usd"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import { ArrowLeft, Upload, Save, Eye, Plus, Trash2, X } from "lucide-react"
+import Link from "next/link"
+import { apiClient } from "@/lib/api"
+import { config } from "@/lib/config"
+
+type ImageType = { id: string; file: File; preview: string; isMain?: boolean }
+
+function ImageUploader({ 
+  images, 
+  setImages, 
+  existingImages = [], 
+  setExistingImages 
+}: {
+  images: ImageType[];
+  setImages: React.Dispatch<React.SetStateAction<ImageType[]>>;
+  existingImages?: Array<{ id: number; url: string; isMain: boolean }>;
+  setExistingImages?: React.Dispatch<React.SetStateAction<Array<{ id: number; url: string; isMain: boolean }>>>;
+}) {
+  const [isDragging, setIsDragging] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileSelect = (files: FileList | null) => {
+    if (!files) return
+
+    const validFiles = Array.from(files).filter((file: File) => {
+      const isValidType = file.type.startsWith("image/")
+      const isValidSize = file.size <= 10 * 1024 * 1024 // 10MB
+      return isValidType && isValidSize
+    })
+
+    const newImages = validFiles.map((file: File) => ({
+      id: Math.random().toString(36).substr(2, 9),
+      file,
+      preview: URL.createObjectURL(file),
+      isMain: false,
+    }))
+
+    setImages((prev: ImageType[]) => [...prev, ...newImages])
+  }
+
+  const removeImage = (id: string) => {
+    setImages((prev: ImageType[]) => {
+      const imageToRemove = prev.find((img: ImageType) => img.id === id)
+      if (imageToRemove) {
+        URL.revokeObjectURL(imageToRemove.preview)
+      }
+      return prev.filter((img: ImageType) => img.id !== id)
+    })
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    handleFileSelect(e.dataTransfer.files)
+  }
+
+  const openFileDialog = () => {
+    fileInputRef.current?.click()
+  }
+
+  const setMainImage = (imageId: number) => {
+    if (setExistingImages) {
+      setExistingImages(prev => 
+        prev.map(img => ({
+          ...img,
+          isMain: img.id === imageId
+        }))
+      )
+    }
+  }
+
+  const setMainNewImage = (imageId: string) => {
+    setImages(prev => 
+      prev.map((img, index) => ({
+        ...img,
+        isMain: img.id === imageId
+      }))
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Upload Area */}
+      <div
+        className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 cursor-pointer ${
+          isDragging
+            ? "border-indigo-400 bg-indigo-50"
+            : "border-slate-300 hover:border-indigo-400 hover:bg-indigo-50/50"
+        }`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={openFileDialog}
+      >
+        <Upload className="mx-auto h-12 w-12 text-slate-400 mb-4" />
+        <div>
+          <Button type="button" variant="outline" className="mb-2">
+            Selecionar Imagens
+          </Button>
+          <p className="text-sm text-slate-500">PNG, JPG até 10MB cada</p>
+          <p className="text-xs text-slate-400 mt-1">Recomendado: 800x800px</p>
+          <p className="text-xs text-slate-400 mt-2">Ou arraste e solte as imagens aqui</p>
+        </div>
+      </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept="image/*"
+        onChange={(e) => handleFileSelect(e.target.files)}
+        className="hidden"
+      />
+
+      {/* Images Preview */}
+      {/* Existing Images */}
+      {existingImages.length > 0 && (
+        <div className="mb-4">
+          <h4 className="text-sm font-medium text-slate-700 mb-3">Imagens Existentes</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {existingImages.map((image, index) => (
+              <div key={image.id} className="relative group">
+                <div className="aspect-square bg-slate-100 rounded-lg border border-slate-200 overflow-hidden">
+                  <img
+                    src={`${config.api.baseUrl}${image.url}`}
+                    alt={`Imagem existente ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center space-x-2">
+                  {!image.isMain && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setMainImage(image.id)}
+                      className="bg-blue-500 hover:bg-blue-600 text-white"
+                    >
+                      Principal
+                    </Button>
+                  )}
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      if (setExistingImages) {
+                        setExistingImages(prev => prev.filter(img => img.id !== image.id))
+                      }
+                    }}
+                    className="bg-red-500 hover:bg-red-600"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                  {image.isMain ? "Principal" : `${index + 1}`}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* New Images */}
+      {images.length > 0 && (
+        <div className="mb-4">
+          <h4 className="text-sm font-medium text-slate-700 mb-3">Novas Imagens</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {images.map((image: ImageType, index: number) => (
+              <div key={image.id} className="relative group">
+                <div className="aspect-square bg-slate-100 rounded-lg border border-slate-200 overflow-hidden">
+                  <img
+                    src={image.preview || "/placeholder.svg"}
+                    alt={`Preview ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center space-x-2">
+                  {!image.isMain && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setMainNewImage(image.id)}
+                      className="bg-blue-500 hover:bg-blue-600 text-white"
+                    >
+                      Principal
+                    </Button>
+                  )}
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => removeImage(image.id)}
+                    className="bg-red-500 hover:bg-red-600"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                  {image.isMain ? "Principal" : `${index + 1}`}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Upload Info */}
+      {(images.length > 0 || existingImages.length > 0) && (
+        <div className="flex items-center justify-between text-sm text-slate-500 pt-2 border-t border-slate-200">
+          <span>{images.length + existingImages.length} imagem(ns) total</span>
+          <span>Primeira imagem será a principal</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function NewProductPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const productId = searchParams.get('id')
+  const [isLoading, setIsLoading] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [loadingProduct, setLoadingProduct] = useState(false)
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    price: "",
+    wholesalePrice: "",
+    priceUSD: "",
+    wholesalePriceUSD: "",
+    category: "",
+    stock: "",
+    status: true,
+    sku: "",
+    weight: "",
+    dimensions: "",
+    youtubeUrl: "",
+  })
+  const [images, setImages] = useState<Array<{ id: string; file: File; preview: string; isMain?: boolean }>>([])
+  const [existingImages, setExistingImages] = useState<Array<{ id: number; url: string; isMain: boolean }>>([])
+  const [variations, setVariations] = useState<
+    Array<{
+      name: string
+      options: string[]
+    }>
+  >([])
+
+  // Carregar dados do produto se for edição
+  useEffect(() => {
+    if (productId) {
+      setIsEditing(true)
+      setLoadingProduct(true)
+      
+      apiClient.getProduct(parseInt(productId))
+        .then((product) => {
+          setFormData({
+            name: product.name || "",
+            description: product.description || "",
+            price: product.price?.toString() || "",
+            wholesalePrice: product.wholesalePrice?.toString() || "",
+            priceUSD: product.priceUSD?.toString() || "",
+            wholesalePriceUSD: product.wholesalePriceUSD?.toString() || "",
+            category: product.category || "",
+            stock: product.stock?.toString() || "",
+            status: product.status ?? true,
+            sku: product.sku || "",
+            weight: product.weight?.toString() || "",
+            dimensions: product.dimensions || "",
+            youtubeUrl: product.youtubeUrl || "",
+          })
+          
+          if (product.variations) {
+            setVariations(product.variations.map((v: any) => ({
+              name: v.name,
+              options: v.options || []
+            })))
+          }
+          
+          // Carregar imagens existentes
+          if (product.images) {
+            setExistingImages(product.images.map((img: any) => ({
+              id: img.id,
+              url: img.url,
+              isMain: img.isMain
+            })))
+          }
+        })
+        .catch((err) => {
+          console.error('Erro ao carregar produto:', err)
+          // Redirecionar para lista se produto não encontrado
+          router.push('/admin/produtos')
+        })
+        .finally(() => {
+          setLoadingProduct(false)
+        })
+    }
+  }, [productId, router])
+
+  const handleInputChange = (field: string, value: string | boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  const addVariation = () => {
+    setVariations([...variations, { name: "", options: [""] }])
+  }
+
+  const updateVariationName = (index: number, name: string) => {
+    const newVariations = [...variations]
+    newVariations[index].name = name
+    setVariations(newVariations)
+  }
+
+  const addVariationOption = (variationIndex: number) => {
+    const newVariations = [...variations]
+    newVariations[variationIndex].options.push("")
+    setVariations(newVariations)
+  }
+
+  const updateVariationOption = (variationIndex: number, optionIndex: number, value: string) => {
+    const newVariations = [...variations]
+    newVariations[variationIndex].options[optionIndex] = value
+    setVariations(newVariations)
+  }
+
+  const removeVariationOption = (variationIndex: number, optionIndex: number) => {
+    const newVariations = [...variations]
+    newVariations[variationIndex].options = newVariations[variationIndex].options.filter((_, i) => i !== optionIndex)
+    setVariations(newVariations)
+  }
+
+  const removeVariation = (index: number) => {
+    setVariations(variations.filter((_, i) => i !== index))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    // Validações básicas
+    if (!formData.name.trim()) {
+      alert("Nome do produto é obrigatório");
+      setIsLoading(false);
+      return;
+    }
+    
+    if (!formData.category) {
+      alert("Categoria é obrigatória");
+      setIsLoading(false);
+      return;
+    }
+    
+    // Validar preço
+    const price = parseFloat(formData.price);
+    if (isNaN(price) || price < 0) {
+      alert("Preço deve ser um número válido maior ou igual a zero");
+      setIsLoading(false);
+      return;
+    }
+    
+    // Validar estoque
+    const stock = parseInt(formData.stock);
+    if (isNaN(stock) || stock < 0) {
+      alert("Estoque deve ser um número válido maior ou igual a zero");
+      setIsLoading(false);
+      return;
+    }
+    
+    const data = new FormData();
+    
+    // Validar preço em dólar
+    const priceUSD = formData.priceUSD ? parseFloat(formData.priceUSD) : undefined;
+    if (formData.priceUSD && (isNaN(priceUSD!) || priceUSD! < 0)) {
+      alert("Preço em dólar deve ser um número válido maior ou igual a zero");
+      setIsLoading(false);
+      return;
+    }
+    
+    // Validar preço de atacado em dólar
+    const wholesalePriceUSD = formData.wholesalePriceUSD ? parseFloat(formData.wholesalePriceUSD) : undefined;
+    if (formData.wholesalePriceUSD && (isNaN(wholesalePriceUSD!) || wholesalePriceUSD! < 0)) {
+      alert("Preço de atacado em dólar deve ser um número válido maior ou igual a zero");
+      setIsLoading(false);
+      return;
+    }
+    
+    // Adicionar dados validados
+    data.append("name", formData.name.trim());
+    data.append("description", formData.description || "");
+    data.append("price", price.toString());
+    data.append("wholesalePrice", formData.wholesalePrice || "");
+    data.append("priceUSD", priceUSD?.toString() || "");
+    data.append("wholesalePriceUSD", wholesalePriceUSD?.toString() || "");
+    data.append("category", formData.category);
+    data.append("stock", stock.toString());
+    data.append("status", formData.status.toString());
+    data.append("sku", formData.sku || "");
+    data.append("weight", formData.weight || "");
+    data.append("dimensions", formData.dimensions || "");
+    data.append("youtubeUrl", formData.youtubeUrl || "");
+    data.append("variations", JSON.stringify(variations));
+    
+    // Enviar informações sobre imagens existentes que devem ser mantidas
+    if (isEditing) {
+      data.append("existingImages", JSON.stringify(existingImages))
+    }
+    
+    // Enviar informações sobre quais novas imagens são principais
+    if (images.length > 0) {
+      const imagesWithMainInfo = images.map((img, index) => ({
+        id: img.id,
+        isMain: img.isMain || false
+      }))
+      data.append("newImagesInfo", JSON.stringify(imagesWithMainInfo))
+    }
+    
+    images.forEach((img) => {
+      data.append("images", img.file)
+    })
+
+    try {
+      if (isEditing && productId) {
+        await apiClient.updateProduct(parseInt(productId), data)
+      } else {
+        await apiClient.createProduct(data)
+      }
+      router.push("/admin/produtos")
+    } catch (err) {
+      console.error('Erro ao salvar produto:', err);
+      alert("Erro ao salvar produto: " + (err instanceof Error ? err.message : 'Erro desconhecido'))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const categories = [
+    "Sandálias",
+    "Rasteirinhas",
+    "Infantil",
+    "Kit",
+  ]
+
+  const getYouTubeVideoId = (url: string) => {
+    const regex = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/
+    const match = url.match(regex)
+    return match ? match[1] : null
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Link href="/admin/produtos">
+            <Button variant="outline" size="sm" className="border-slate-300">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">
+              {isEditing ? "Editar Produto" : "Novo Produto"}
+            </h1>
+            <p className="text-slate-600 mt-1">
+              {isEditing ? "Edite as informações do produto" : "Adicione um novo produto ao seu catálogo"}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-3">
+          <Button variant="outline" className="border-slate-300">
+            <Eye className="mr-2 h-4 w-4" />
+            Visualizar
+          </Button>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Basic Information */}
+            <Card className="border-0 shadow-lg shadow-slate-200/50">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-slate-900">Informações Básicas</CardTitle>
+                <CardDescription>Dados principais do produto</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="sm:col-span-2">
+                    <Label htmlFor="name" className="text-slate-700 font-medium">
+                      Nome do Produto *
+                    </Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="Ex: iPhone 15 Pro Max 256GB"
+                      className="mt-2 border-slate-300 focus:border-indigo-500 focus:ring-indigo-500"
+                      value={formData.name}
+                      onChange={(e) => handleInputChange("name", e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="sku" className="text-slate-700 font-medium">
+                      SKU
+                    </Label>
+                    <Input
+                      id="sku"
+                      type="text"
+                      placeholder="Ex: IPH15PM256"
+                      className="mt-2 border-slate-300 focus:border-indigo-500 focus:ring-indigo-500"
+                      value={formData.sku}
+                      onChange={(e) => handleInputChange("sku", e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="category" className="text-slate-700 font-medium">
+                      Categoria *
+                    </Label>
+                    <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
+                      <SelectTrigger className="mt-2 border-slate-300 focus:border-indigo-500 focus:ring-indigo-500">
+                        <SelectValue placeholder="Selecione uma categoria" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="description" className="text-slate-700 font-medium">
+                    Descrição
+                  </Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Descreva as características e benefícios do produto..."
+                    rows={4}
+                    className="mt-2 border-slate-300 focus:border-indigo-500 focus:ring-indigo-500"
+                    value={formData.description}
+                    onChange={(e) => handleInputChange("description", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="youtubeUrl" className="text-slate-700 font-medium">
+                    Vídeo do YouTube
+                  </Label>
+                  <Input
+                    id="youtubeUrl"
+                    type="url"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="mt-2 border-slate-300 focus:border-indigo-500 focus:ring-indigo-500"
+                    value={formData.youtubeUrl}
+                    onChange={(e) => handleInputChange("youtubeUrl", e.target.value)}
+                  />
+                  <p className="text-xs text-slate-500 mt-1">
+                    Cole o link completo do vídeo no YouTube para demonstração do produto
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Pricing & Inventory */}
+            <Card className="border-0 shadow-lg shadow-slate-200/50">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-slate-900">Preço e Estoque</CardTitle>
+                <CardDescription>Configurações de preço e inventário</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <Label htmlFor="price" className="text-slate-700 font-medium">
+                      Preço (R$) *
+                    </Label>
+                    <CurrencyInput
+                      id="price"
+                      placeholder="0,00"
+                      className="mt-2"
+                      value={formData.price}
+                      onChange={(value) => handleInputChange("price", value)}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="wholesalePrice" className="text-slate-700 font-medium">
+                      Preço de Atacado (R$)
+                    </Label>
+                    <CurrencyInput
+                      id="wholesalePrice"
+                      placeholder="0,00"
+                      className="mt-2"
+                      value={formData.wholesalePrice}
+                      onChange={(value) => handleInputChange("wholesalePrice", value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <Label htmlFor="priceUSD" className="text-slate-700 font-medium">
+                      Preço (USD)
+                    </Label>
+                    <CurrencyInputUSD
+                      id="priceUSD"
+                      placeholder="0.00"
+                      className="mt-2"
+                      value={formData.priceUSD}
+                      onChange={(value) => handleInputChange("priceUSD", value)}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="wholesalePriceUSD" className="text-slate-700 font-medium">
+                      Preço de Atacado (USD)
+                    </Label>
+                    <CurrencyInputUSD
+                      id="wholesalePriceUSD"
+                      placeholder="0.00"
+                      className="mt-2"
+                      value={formData.wholesalePriceUSD}
+                      onChange={(value) => handleInputChange("wholesalePriceUSD", value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <Label htmlFor="stock" className="text-slate-700 font-medium">
+                      Quantidade em Estoque *
+                    </Label>
+                    <Input
+                      id="stock"
+                      type="number"
+                      placeholder="0"
+                      className="mt-2 border-slate-300 focus:border-indigo-500 focus:ring-indigo-500"
+                      value={formData.stock}
+                      onChange={(e) => handleInputChange("stock", e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Shipping 
+            <Card className="border-0 shadow-lg shadow-slate-200/50">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-slate-900">Informações de Envio</CardTitle>
+                <CardDescription>Dados para cálculo de frete</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <Label htmlFor="weight" className="text-slate-700 font-medium">
+                      Peso (kg)
+                    </Label>
+                    <Input
+                      id="weight"
+                      type="number"
+                      step="0.01"
+                      placeholder="0,00"
+                      className="mt-2 border-slate-300 focus:border-indigo-500 focus:ring-indigo-500"
+                      value={formData.weight}
+                      onChange={(e) => handleInputChange("weight", e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="dimensions" className="text-slate-700 font-medium">
+                      Dimensões (cm)
+                    </Label>
+                    <Input
+                      id="dimensions"
+                      type="text"
+                      placeholder="Ex: 15x8x1"
+                      className="mt-2 border-slate-300 focus:border-indigo-500 focus:ring-indigo-500"
+                      value={formData.dimensions}
+                      onChange={(e) => handleInputChange("dimensions", e.target.value)}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>*/}
+
+            {/* Product Variations */}
+            <Card className="border-0 shadow-lg shadow-slate-200/50">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-slate-900">Variações do Produto</CardTitle>
+                <CardDescription>Configure diferentes opções como cor, tamanho, etc.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {variations.map((variation, variationIndex) => (
+                  <div key={variationIndex} className="p-4 border border-slate-200 rounded-xl space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium text-slate-900">Variação {variationIndex + 1}</h4>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeVariation(variationIndex)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    <div>
+                      <Label htmlFor={`variation-name-${variationIndex}`}>Nome da Variação *</Label>
+                      <Input
+                        id={`variation-name-${variationIndex}`}
+                        placeholder="Ex: Cor, Tamanho, Material"
+                        value={variation.name}
+                        onChange={(e) => updateVariationName(variationIndex, e.target.value)}
+                        className="mt-2"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Opções da Variação</Label>
+                      <div className="mt-2 space-y-2">
+                        {variation.options.map((option, optionIndex) => (
+                          <div key={optionIndex} className="flex items-center space-x-2">
+                            <Input
+                              placeholder="Ex: Azul, Vermelho, P, M, G"
+                              value={option}
+                              onChange={(e) => updateVariationOption(variationIndex, optionIndex, e.target.value)}
+                              className="flex-1"
+                            />
+                            {variation.options.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeVariationOption(variationIndex, optionIndex)}
+                                className="text-red-600"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addVariationOption(variationIndex)}
+                          className="w-full"
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          Adicionar Opção
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addVariation}
+                  className="w-full border-dashed border-2 border-slate-300 hover:border-indigo-400 hover:bg-indigo-50"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Adicionar Variação
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-8">
+            {/* Status */}
+            <Card className="border-0 shadow-lg shadow-slate-200/50">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-slate-900">Status</CardTitle>
+                <CardDescription>Configurações de visibilidade</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="status" className="text-slate-700 font-medium">
+                      Produto Ativo
+                    </Label>
+                    <p className="text-sm text-slate-500 mt-1">
+                      {formData.status ? "Visível na loja" : "Oculto na loja"}
+                    </p>
+                  </div>
+                  <Switch
+                    id="status"
+                    checked={formData.status}
+                    onCheckedChange={(checked) => handleInputChange("status", checked)}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Product Images */}
+            <Card className="border-0 shadow-lg shadow-slate-200/50">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-slate-900">Imagens do Produto</CardTitle>
+                <CardDescription>Adicione fotos do produto</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ImageUploader images={images} setImages={setImages} existingImages={existingImages} setExistingImages={setExistingImages} />
+              </CardContent>
+            </Card>
+
+            {/* SEO 
+            <Card className="border-0 shadow-lg shadow-slate-200/50">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-slate-900">SEO</CardTitle>
+                <CardDescription>Otimização para buscadores</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="meta-title" className="text-slate-700 font-medium">
+                    Meta Título
+                  </Label>
+                  <Input
+                    id="meta-title"
+                    type="text"
+                    placeholder="Título para SEO"
+                    className="mt-2 border-slate-300 focus:border-indigo-500 focus:ring-indigo-500"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="meta-description" className="text-slate-700 font-medium">
+                    Meta Descrição
+                  </Label>
+                  <Textarea
+                    id="meta-description"
+                    placeholder="Descrição para SEO"
+                    rows={3}
+                    className="mt-2 border-slate-300 focus:border-indigo-500 focus:ring-indigo-500"
+                  />
+                </div>
+              </CardContent>
+            </Card>*/}
+
+            {/* YouTube Video Preview */}
+            {formData.youtubeUrl && (
+              <Card className="border-0 shadow-lg shadow-slate-200/50">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-slate-900">Preview do Vídeo</CardTitle>
+                  <CardDescription>Como o vídeo aparecerá no produto</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {(() => {
+                    const videoId = getYouTubeVideoId(formData.youtubeUrl)
+                    if (videoId) {
+                      return (
+                        <div className="aspect-video bg-slate-100 rounded-lg overflow-hidden">
+                          <iframe
+                            src={`https://www.youtube.com/embed/${videoId}`}
+                            title="YouTube video preview"
+                            className="w-full h-full"
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      )
+                    } else {
+                      return (
+                        <div className="aspect-video bg-slate-100 rounded-lg flex items-center justify-center">
+                          <p className="text-sm text-slate-500 text-center">
+                            Link do YouTube inválido
+                            <br />
+                            <span className="text-xs">Verifique se o link está correto</span>
+                          </p>
+                        </div>
+                      )
+                    }
+                  })()}
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex justify-end space-x-4 pt-6 border-t border-slate-200">
+          <Link href="/admin/produtos">
+            <Button type="button" variant="outline" className="border-slate-300">
+              Cancelar
+            </Button>
+          </Link>
+          <Button
+            type="submit"
+            disabled={isLoading || loadingProduct}
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-500/25"
+          >
+            {isLoading || loadingProduct ? (
+              <div className="flex items-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                {loadingProduct ? "Carregando..." : "Salvando..."}
+              </div>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                {isEditing ? "Atualizar Produto" : "Salvar Produto"}
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
+    </div>
+  )
+}

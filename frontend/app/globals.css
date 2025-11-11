@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "Inter", Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 45 100% 51%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 48 100% 96%;
+    --secondary-foreground: 45 100% 9%;
+    --muted: 48 100% 96%;
+    --muted-foreground: 45 5% 45%;
+    --accent: 48 100% 88%;
+    --accent-foreground: 45 100% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 45 93% 89%;
+    --input: 45 93% 89%;
+    --ring: 45 100% 51%;
+    --chart-1: 45 100% 61%;
+    --chart-2: 35 100% 39%;
+    --chart-3: 25 100% 24%;
+    --chart-4: 55 100% 66%;
+    --chart-5: 65 100% 67%;
+    --radius: 0.5rem;
+    --sidebar-background: 48 100% 98%;
+    --sidebar-foreground: 45 5.3% 26.1%;
+    --sidebar-primary: 45 100% 51%;
+    --sidebar-primary-foreground: 0 0% 9%;
+    --sidebar-accent: 48 100% 88%;
+    --sidebar-accent-foreground: 45 100% 9%;
+    --sidebar-border: 45 93% 89%;
+    --sidebar-ring: 45 100% 51%;
+  }
+  .dark {
+    --background: 45 100% 3.9%;
+    --foreground: 48 100% 98%;
+    --card: 45 100% 3.9%;
+    --card-foreground: 48 100% 98%;
+    --popover: 45 100% 3.9%;
+    --popover-foreground: 48 100% 98%;
+    --primary: 45 100% 51%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 45 100% 14.9%;
+    --secondary-foreground: 48 100% 98%;
+    --muted: 45 100% 14.9%;
+    --muted-foreground: 48 5% 63.9%;
+    --accent: 45 100% 14.9%;
+    --accent-foreground: 48 100% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 48 100% 98%;
+    --border: 45 100% 14.9%;
+    --input: 45 100% 14.9%;
+    --ring: 45 100% 51%;
+    --chart-1: 45 100% 50%;
+    --chart-2: 35 100% 45%;
+    --chart-3: 25 100% 55%;
+    --chart-4: 55 100% 60%;
+    --chart-5: 65 100% 55%;
+    --sidebar-background: 45 100% 10%;
+    --sidebar-foreground: 48 100% 95.9%;
+    --sidebar-primary: 45 100% 51%;
+    --sidebar-primary-foreground: 0 0% 9%;
+    --sidebar-accent: 45 100% 15.9%;
+    --sidebar-accent-foreground: 48 100% 95.9%;
+    --sidebar-border: 45 100% 15.9%;
+    --sidebar-ring: 45 100% 51%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom gold gradient animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.4), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Premium gold accents */
+.gold-gradient {
+  background: linear-gradient(135deg, #d4af37, #ffd700, #b8860b);
+}
+
+.gold-text {
+  background: linear-gradient(135deg, #d4af37, #ffd700);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
