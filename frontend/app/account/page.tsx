@@ -32,47 +32,47 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-yellow-50">
+    <div className="min-h-screen bg-brand-background">
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
-            <Button variant="ghost" size="icon" className="text-yellow-700 hover:bg-yellow-100">
+            <Button variant="ghost" size="icon" className="text-brand-primary hover:bg-brand-primary/10">
               <ArrowLeft className="h-6 w-6" />
             </Button>
           </Link>
 
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Crown className="h-10 w-10 text-yellow-600" />
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-700 to-amber-700 bg-clip-text text-transparent">
+            <Crown className="h-10 w-10 text-brand-primary" />
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">
               Minha conta
             </h1>
-            <Crown className="h-10 w-10 text-yellow-600" />
+            <Crown className="h-10 w-10 text-brand-primary" />
           </div>
 
           <p className="text-gray-600 text-lg">Gerencie sua conta de atacado</p>
         </div>
 
         {/* User Info Card */}
-        <Card className="border-2 border-yellow-200 shadow-xl bg-gradient-to-b from-white to-yellow-50 mb-6">
+        <Card className="border border-brand-primary/20 shadow-xl bg-white mb-6">
           <CardHeader className="text-center pb-4">
-            <div className="w-20 h-20 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-20 h-20 bg-gradient-to-r from-brand-primary to-brand-secondary rounded-full flex items-center justify-center mx-auto mb-4">
               <User className="h-10 w-10 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-gray-800">{user.name}</h2>
           </CardHeader>
 
           <CardContent className="space-y-4">
-            <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg">
-              <Phone className="h-5 w-5 text-yellow-600" />
+            <div className="flex items-center gap-3 p-3 bg-brand-primary/5 rounded-lg">
+              <Phone className="h-5 w-5 text-brand-primary" />
               <div>
                 <p className="text-sm text-gray-600">WhatsApp</p>
                 <p className="font-semibold text-gray-800">{user.whatsapp}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg">
-              <Shield className="h-5 w-5 text-yellow-600" />
+            <div className="flex items-center gap-3 p-3 bg-brand-primary/5 rounded-lg">
+              <Shield className="h-5 w-5 text-brand-primary" />
               <div>
                 <p className="text-sm text-gray-600">Status da conta</p>
                 <p className="font-semibold text-gray-800">
@@ -81,8 +81,8 @@ export default function AccountPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg">
-              <Crown className="h-5 w-5 text-yellow-600" />
+            <div className="flex items-center gap-3 p-3 bg-brand-primary/5 rounded-lg">
+              <Crown className="h-5 w-5 text-brand-primary" />
               <div>
                 <p className="text-sm text-gray-600">Tipo de conta</p>
                 <p className="font-semibold text-gray-800">
@@ -104,8 +104,8 @@ export default function AccountPage() {
             )}
 
             {user.lastLoginAt && (
-              <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg">
-                <div className="h-5 w-5 text-yellow-600 flex items-center justify-center">
+              <div className="flex items-center gap-3 p-3 bg-brand-primary/5 rounded-lg">
+                <div className="h-5 w-5 text-brand-primary flex items-center justify-center">
                   <span className="text-lg">🕒</span>
                 </div>
                 <div>
@@ -126,26 +126,26 @@ export default function AccountPage() {
         </Card>
 
         {/* Actions Card */}
-        <Card className="border-2 border-yellow-200 shadow-xl bg-gradient-to-b from-white to-yellow-50">
+        <Card className="border border-brand-primary/20 shadow-xl bg-white">
           <CardHeader>
             <h3 className="text-xl font-bold text-gray-800">Ações da conta</h3>
           </CardHeader>
 
           <CardContent className="space-y-4">
             <Link href="/">
-              <Button className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white font-semibold py-3 mb-3">
+              <Button className="w-full bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-semibold py-3 mb-3 hover:brightness-110">
                 Ver produtos
               </Button>
             </Link>
 
             <Link href="/pacotes">
-              <Button className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white font-semibold py-3 mb-3">
+              <Button className="w-full bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-semibold py-3 mb-3 hover:brightness-110">
                 Ver pacotes
               </Button>
             </Link>
 
             <Link href="/aulas">
-              <Button className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white font-semibold py-3 mb-3">
+              <Button className="w-full bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-semibold py-3 mb-3 hover:brightness-110">
                 Acessar educação
               </Button>
             </Link>
@@ -172,7 +172,7 @@ export default function AccountPage() {
         </Card>
 
         {/* Support Section */}
-        <Card className="border-2 border-yellow-200 shadow-xl bg-gradient-to-b from-white to-yellow-50 mt-6 mb-6">
+        <Card className="border border-brand-primary/20 shadow-xl bg-white mt-6 mb-6">
           <CardHeader>
             <h3 className="text-xl font-bold text-gray-800">Precisar de ajuda?</h3>
           </CardHeader>

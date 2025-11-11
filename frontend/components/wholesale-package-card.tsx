@@ -24,8 +24,8 @@ export default function WholesalePackageCard({ package: pkg, featured = false }:
   return (
     <Card
       className={cn(
-        "overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border-2",
-        featured ? "border-yellow-400 shadow-2xl" : "border-yellow-100",
+        "overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border",
+        featured ? "border-brand-primary shadow-2xl" : "border-brand-primary/20",
       )}
     >
       <div className="relative">
@@ -41,7 +41,7 @@ export default function WholesalePackageCard({ package: pkg, featured = false }:
 
           {/* Badges */}
           <div className="absolute top-4 left-4 flex flex-col gap-2">
-            <Badge className="bg-yellow-600 text-white font-semibold">{pkg.category}</Badge>
+            <Badge className="bg-brand-primary text-white font-semibold">{pkg.category}</Badge>
             {pkg.isPopular && (
               <Badge className="bg-red-500 text-white font-semibold flex items-center gap-1">
                 <Crown className="h-3 w-3" />
@@ -65,7 +65,7 @@ export default function WholesalePackageCard({ package: pkg, featured = false }:
           </div>
 
           {/* Featured Crown */}
-          {featured && <Crown className="absolute bottom-4 left-4 h-8 w-8 text-yellow-400 animate-pulse" />}
+          {featured && <Crown className="absolute bottom-4 left-4 h-8 w-8 text-brand-primary animate-pulse" />}
         </div>
 
         {/* Content */}
@@ -76,7 +76,7 @@ export default function WholesalePackageCard({ package: pkg, featured = false }:
 
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="flex items-center gap-2">
-                <Package className="h-4 w-4 text-yellow-600" />
+                <Package className="h-4 w-4 text-brand-primary" />
                 <div>
                   <p className="text-gray-500">Pedido Mín.</p>
                   <p className="font-semibold">{pkg.minimumOrder} pares</p>
@@ -95,13 +95,13 @@ export default function WholesalePackageCard({ package: pkg, featured = false }:
           {/* Benefits */}
           <div className="mb-6">
             <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-              <Crown className="h-4 w-4 text-yellow-600" />
+              <Crown className="h-4 w-4 text-brand-primary" />
               Benefícios do Pacote
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {pkg.benefits.map((benefit, index) => (
                 <div key={index} className="flex items-center gap-2 text-sm">
-                  <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                  <div className="w-2 h-2 rounded-full bg-brand-primary" />
                   <span className="text-gray-600">{benefit}</span>
                 </div>
               ))}
@@ -115,7 +115,7 @@ export default function WholesalePackageCard({ package: pkg, featured = false }:
               className="flex items-center justify-between w-full text-left mb-3"
             >
               <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-                <Users className="h-4 w-4 text-yellow-600" />
+                <Users className="h-4 w-4 text-brand-primary" />
                 Opções White-Label ({pkg.whiteLabelOptions.length})
               </h4>
               {showWhiteLabel ? (
@@ -130,13 +130,13 @@ export default function WholesalePackageCard({ package: pkg, featured = false }:
                 {pkg.whiteLabelOptions.map((option) => (
                   <div
                     key={option.id}
-                    className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200"
+                    className="flex items-start gap-3 p-3 bg-brand-primary/5 rounded-lg border border-brand-primary/20"
                   >
                     <span className="text-xl flex-shrink-0">{option.icon}</span>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
                         <h5 className="font-medium text-gray-800 text-sm">{option.name}</h5>
-                        <Badge variant="outline" className="border-yellow-400 text-yellow-700 text-xs">
+                        <Badge variant="outline" className="border-brand-primary text-brand-primary text-xs">
                           +R$ {option.price.toFixed(2)}
                         </Badge>
                       </div>

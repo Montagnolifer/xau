@@ -23,9 +23,9 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-yellow-50 to-orange-50">
+    <div className="min-h-screen bg-brand-background">
       {/* Hero Section */}
-      <div className="relative h-[60vh] overflow-hidden bg-gradient-to-r from-yellow-900 via-amber-800 to-orange-900">
+      <div className="relative h-[60vh] overflow-hidden bg-gradient-to-r from-brand-secondary via-brand-secondary to-brand-primary">
         <Image
           src={category.thumbnailUrl || "/placeholder.svg"}
           alt={category.name}
@@ -47,19 +47,19 @@ export default function CategoryPage({ params }: CategoryPageProps) {
         <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12">
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center gap-3 mb-4">
-              <Crown className="h-10 w-10 text-yellow-400" />
+              <Crown className="h-10 w-10 text-brand-primary" />
               <span className="text-4xl md:text-5xl">{category.icon}</span>
-              <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0 px-4 py-2 font-bold">
+              <Badge className="bg-gradient-to-r from-brand-primary to-brand-secondary text-white border-0 px-4 py-2 font-bold">
                 {category.lessonsCount} AULAS
               </Badge>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-yellow-200 to-amber-200 bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">
               {category.name}
             </h1>
-            <p className="text-lg md:text-xl text-yellow-100 mb-6 max-w-2xl">{category.description}</p>
-            <div className="flex items-center gap-6 text-sm text-yellow-200 mb-6">
+            <p className="text-lg md:text-xl text-white/80 mb-6 max-w-2xl">{category.description}</p>
+            <div className="flex items-center gap-6 text-sm text-white/80 mb-6">
               <div className="flex items-center gap-2">
-                <Star className="h-4 w-4 text-yellow-400" />
+                <Star className="h-4 w-4 text-brand-primary" />
                 <span>Avaliação 4.9</span>
               </div>
               <div className="flex items-center gap-2">
@@ -79,8 +79,8 @@ export default function CategoryPage({ params }: CategoryPageProps) {
       <div className="px-6 md:px-12 py-12">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center gap-3 mb-8">
-            <Award className="h-8 w-8 text-yellow-600" />
-            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-yellow-700 to-amber-700 bg-clip-text text-transparent">
+            <Award className="h-8 w-8 text-brand-primary" />
+            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">
               Cursos Disponíveis
             </h2>
           </div>
@@ -89,7 +89,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
             {categoryCourses.map((course, courseIndex) => (
               <Card
                 key={course.id}
-                className="bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-200 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300"
+                className="bg-white border border-brand-primary/20 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <div className="grid lg:grid-cols-3 gap-0">
                   <div className="relative h-64 lg:h-auto">
@@ -101,12 +101,12 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-black/60 to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4 lg:bottom-6 lg:left-6">
-                      <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0 mb-2 font-bold">
+                      <Badge className="bg-gradient-to-r from-brand-primary to-brand-secondary text-white border-0 mb-2 font-bold">
                         Curso {courseIndex + 1}
                       </Badge>
                       <h3 className="text-xl lg:text-2xl font-bold text-white mb-1">{course.title}</h3>
                       <p className="text-white/90 text-sm flex items-center gap-2">
-                        <Crown className="h-4 w-4 text-yellow-400" />
+                        <Crown className="h-4 w-4 text-brand-primary" />
                         By {course.instructor}
                       </p>
                     </div>
@@ -118,10 +118,10 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between mb-4">
                         <h4 className="font-bold text-xl text-gray-800 flex items-center gap-2">
-                          <TrendingUp className="h-5 w-5 text-yellow-600" />
+                          <TrendingUp className="h-5 w-5 text-brand-primary" />
                           Aulas do Curso
                         </h4>
-                        <Badge variant="outline" className="border-2 border-yellow-400 text-yellow-700 font-bold">
+                        <Badge variant="outline" className="border border-brand-primary text-brand-primary font-bold">
                           {course.lessons.length} aulas
                         </Badge>
                       </div>
@@ -138,12 +138,12 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                             ${
                               lesson.isLocked
                                 ? "bg-gray-100 border-gray-200 opacity-60"
-                                : "hover:bg-gradient-to-r hover:from-yellow-50 hover:to-amber-50 cursor-pointer border-yellow-200 hover:border-yellow-400"
+                                : "hover:bg-brand-primary/10 cursor-pointer border-brand-primary/20 hover:border-brand-primary"
                             }
                           `}
                           >
                             <div className="flex-shrink-0 relative">
-                              <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-yellow-400 to-amber-400 flex items-center justify-center shadow-lg">
+                              <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-brand-primary to-brand-secondary flex items-center justify-center shadow-lg">
                                 {lesson.isCompleted ? (
                                   <CheckCircle className="h-6 w-6 text-white" />
                                 ) : lesson.isLocked ? (
@@ -164,7 +164,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                                 </span>
                                 <Badge
                                   variant="outline"
-                                  className="border-yellow-400 text-yellow-700 text-xs font-bold"
+                                  className="border-brand-primary text-brand-primary text-xs font-bold"
                                 >
                                   {lesson.duration}
                                 </Badge>
@@ -172,7 +172,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                                   <Badge className="bg-green-500 text-white text-xs">Concluído</Badge>
                                 )}
                               </div>
-                              <h5 className="font-bold text-gray-800 group-hover:text-yellow-700 transition-colors">
+                              <h5 className="font-bold text-gray-800 group-hover:text-brand-primary transition-colors">
                                 {lesson.title}
                               </h5>
                               <p className="text-sm text-gray-600 mt-1">{lesson.description}</p>
@@ -182,7 +182,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                               <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button
                                   size="sm"
-                                  className="bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white font-bold"
+                                  className="bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-bold hover:brightness-110"
                                 >
                                   Assistir Agora
                                 </Button>

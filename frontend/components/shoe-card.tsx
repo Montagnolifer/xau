@@ -29,7 +29,7 @@ export default function ShoeCard({ shoe }: ShoeCardProps) {
   const totalProfit = (shoe.retailPrice - shoe.wholesalePrice) * shoe.minimumOrder
 
   return (
-    <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-yellow-100">
+    <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border border-brand-primary/20">
       <div className="relative">
         {/* Image Carousel */}
         <div className="relative h-64 md:h-80 w-full">
@@ -60,7 +60,7 @@ export default function ShoeCard({ shoe }: ShoeCardProps) {
 
           {/* Badges */}
           <div className="absolute top-4 left-4 flex flex-col gap-2">
-            <Badge className="bg-yellow-600 text-white font-semibold">{shoe.category}</Badge>
+            <Badge className="bg-brand-primary text-white font-semibold">{shoe.category}</Badge>
             {shoe.isNewArrival && <Badge className="bg-green-500 text-white font-semibold">Novo</Badge>}
             {shoe.isBestseller && (
               <Badge className="bg-red-500 text-white font-semibold flex items-center gap-1">
@@ -81,7 +81,7 @@ export default function ShoeCard({ shoe }: ShoeCardProps) {
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <Crown className="h-5 w-5 text-yellow-600" />
+                <Crown className="h-5 w-5 text-brand-primary" />
                 <h3 className="text-xl font-bold text-gray-800">{shoe.name}</h3>
               </div>
               <p className="text-sm text-gray-500 mb-1">by {shoe.brand}</p>
@@ -90,10 +90,10 @@ export default function ShoeCard({ shoe }: ShoeCardProps) {
           </div>
 
           {/* Pricing */}
-          <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg border border-yellow-200">
+          <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-brand-primary/5 rounded-lg border border-brand-primary/20">
             <div>
               <p className="text-sm text-gray-600 mb-1">Preço Atacado</p>
-              <p className="text-2xl font-bold text-yellow-700">R$ {shoe.wholesalePrice.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-brand-primary">R$ {shoe.wholesalePrice.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-1">Preço Sugerido</p>
@@ -130,8 +130,8 @@ export default function ShoeCard({ shoe }: ShoeCardProps) {
                   className={cn(
                     "flex items-center gap-2 p-2 rounded-lg border text-xs transition-all",
                     selectedVariant === variant
-                      ? "border-yellow-400 bg-yellow-50"
-                      : "border-gray-200 hover:border-gray-300",
+                      ? "border-brand-primary bg-brand-primary/10"
+                      : "border-gray-200 hover:border-brand-primary/40",
                   )}
                 >
                   <div className="w-3 h-3 rounded-full border" style={{ backgroundColor: variant.colorHex }} />
@@ -147,7 +147,7 @@ export default function ShoeCard({ shoe }: ShoeCardProps) {
             <p className="text-sm font-semibold text-gray-700 mb-3">Características</p>
             <div className="flex flex-wrap gap-2">
               {shoe.features.slice(0, 4).map((feature, index) => (
-                <Badge key={index} variant="outline" className="border-yellow-300 text-yellow-700 text-xs">
+                <Badge key={index} variant="outline" className="border-brand-primary/30 text-brand-primary text-xs">
                   {feature}
                 </Badge>
               ))}
@@ -162,11 +162,11 @@ export default function ShoeCard({ shoe }: ShoeCardProps) {
               rel="noopener noreferrer"
               className="flex-1"
             >
-              <button className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+              <button className="w-full bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 hover:brightness-110">
                 Pedir no Atacado
               </button>
             </a>
-            <button className="sm:w-auto px-6 border-2 border-yellow-600 text-yellow-700 hover:bg-yellow-50 font-semibold py-3 rounded-lg transition-colors">
+            <button className="sm:w-auto px-6 border-2 border-brand-secondary text-brand-secondary hover:bg-brand-secondary/10 font-semibold py-3 rounded-lg transition-colors">
               Solicitar Orçamento
             </button>
           </div>

@@ -73,6 +73,11 @@ const config: Config = {
           800: "#7A5800",
           900: "#5C4200",
         },
+        brand: {
+          primary: "hsl(var(--brand-primary))",
+          secondary: "hsl(var(--brand-secondary))",
+          background: "hsl(var(--brand-background))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

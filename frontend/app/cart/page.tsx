@@ -201,13 +201,13 @@ export default function CartPage() {
 
   if (state.items.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-yellow-50">
+      <div className="min-h-screen bg-brand-background">
         <div className="max-w-4xl mx-auto px-4 py-8">
           {/* Header */}
           <div className="text-center mb-12">
             <div className="flex items-center justify-center gap-3 mb-4">
-              <ShoppingCart className="h-10 w-10 text-yellow-600" />
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-700 to-amber-700 bg-clip-text text-transparent">
+              <ShoppingCart className="h-10 w-10 text-brand-primary" />
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">
                 Carrinho de Compras
               </h1>
             </div>
@@ -224,7 +224,7 @@ export default function CartPage() {
             <h3 className="text-xl font-semibold text-gray-600 mb-4">Carrinho Vazio</h3>
             <p className="text-gray-500 mb-8">Adicione produtos da nossa coleção para fazer seu pedido no atacado.</p>
             <Link href="/">
-              <Button className="bg-yellow-600 hover:bg-yellow-700 text-white px-8 py-3">
+              <Button className="bg-gradient-to-r from-brand-primary to-brand-secondary text-white px-8 py-3 hover:brightness-110">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Ver Produtos
               </Button>
@@ -236,13 +236,13 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-yellow-50">
+    <div className="min-h-screen bg-brand-background">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <ShoppingCart className="h-10 w-10 text-yellow-600" />
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-700 to-amber-700 bg-clip-text text-transparent">
+            <ShoppingCart className="h-10 w-10 text-brand-primary" />
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">
               Sacola Emma
             </h1>
           </div>
@@ -253,10 +253,10 @@ export default function CartPage() {
 
         {/* Progress Bar */}
         <div className="mb-8">
-          <div className="bg-white rounded-lg p-6 shadow-lg border border-yellow-200">
+          <div className="bg-white rounded-lg p-6 shadow-lg border border-brand-primary/20">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <Package className="h-6 w-6 text-yellow-600" />
+                <Package className="h-6 w-6 text-brand-primary" />
                 <h3 className="text-lg font-semibold text-gray-800">Progresso do Pedido</h3>
               </div>
               <Badge 
@@ -265,8 +265,8 @@ export default function CartPage() {
                   : (retailPromotionMet ? "default" : "secondary")
                 }
                 className={state.userType === 'wholesale' 
-                  ? (minimumOrderMet ? "bg-green-500" : "bg-yellow-500")
-                  : (retailPromotionMet ? "bg-green-500" : "bg-orange-500")
+                  ? (minimumOrderMet ? "bg-green-500" : "bg-brand-primary")
+                  : (retailPromotionMet ? "bg-green-500" : "bg-brand-secondary")
                 }
               >
                 {state.userType === 'wholesale' 
@@ -281,8 +281,8 @@ export default function CartPage() {
               <div 
                 className={`h-3 rounded-full transition-all duration-300 ${
                   state.userType === 'wholesale' 
-                    ? (minimumOrderMet ? 'bg-green-500' : 'bg-yellow-500')
-                    : (retailPromotionMet ? 'bg-green-500' : 'bg-orange-500')
+                    ? (minimumOrderMet ? 'bg-green-500' : 'bg-brand-primary')
+                    : (retailPromotionMet ? 'bg-green-500' : 'bg-brand-secondary')
                 }`}
                 style={{ 
                   width: `${Math.min(
@@ -306,8 +306,8 @@ export default function CartPage() {
                   </>
                 ) : (
                   <>
-                    <AlertCircle className="h-5 w-5 text-yellow-500" />
-                    <span className="text-yellow-700 font-medium">
+                    <AlertCircle className="h-5 w-5 text-brand-primary" />
+                    <span className="text-brand-primary font-medium">
                       Faltam {itemsRemaining} pares para atingir o mínimo de 8 pares
                     </span>
                   </>
@@ -321,8 +321,8 @@ export default function CartPage() {
                   </>
                 ) : (
                   <>
-                    <AlertCircle className="h-5 w-5 text-orange-500" />
-                    <span className="text-orange-700 font-medium">
+                    <AlertCircle className="h-5 w-5 text-brand-secondary" />
+                    <span className="text-brand-secondary font-medium">
                       {state.totalItems === 1 
                         ? "⚠️ Você está perdendo a promoção! Adicione mais 1 par para ganhar um brinde!"
                         : `Faltam ${itemsRemaining} pares para ganhar um brinde e participar da promoção`
@@ -343,12 +343,12 @@ export default function CartPage() {
             // Mostrar aviso de promoção próxima
             return (
               <div className="mb-8">
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-6 shadow-lg">
+                <div className="bg-brand-secondary/5 border border-brand-secondary/30 rounded-lg p-6 shadow-lg">
                   <div className="flex items-center gap-3 mb-2">
-                    <AlertCircle className="h-6 w-6 text-orange-600" />
-                    <h3 className="text-lg font-semibold text-orange-800">🎉 Promoção Especial!</h3>
+                    <AlertCircle className="h-6 w-6 text-brand-secondary" />
+                    <h3 className="text-lg font-semibold text-brand-secondary">🎉 Promoção Especial!</h3>
                   </div>
-                  <p className="text-orange-700">
+                  <p className="text-brand-secondary">
                     Você tem {promotionInfo.eligibleCount} unidade(s) de produto(s) de R$ 59,90. 
                     Adicione mais {2 - promotionInfo.eligibleCount} unidade(s) de produto(s) de R$ 59,90 
                     para ganhar desconto de R$ 9,95 em cada um!
@@ -387,7 +387,7 @@ export default function CartPage() {
           <div className="lg:col-span-2 space-y-6">
             <div className="space-y-4">
               {state.items.map((item, index) => (
-                <Card key={`${item.product.id}-${item.selectedSize}-${item.selectedColor}`} className="shadow-lg border border-yellow-200">
+                <Card key={`${item.product.id}-${item.selectedSize}-${item.selectedColor}`} className="shadow-lg border border-brand-primary/20">
                   <CardContent className="p-6">
                     <div className="flex flex-col lg:flex-row gap-4 relative">
                       {/* Delete Button - Fixed position on all devices */}
@@ -430,7 +430,7 @@ export default function CartPage() {
                             {(item.selectedSize || item.selectedColor) && (
                               <Badge 
                                 variant="outline" 
-                                className="bg-transparent border-yellow-300 text-yellow-800 text-xs px-2 py-1"
+                                className="bg-transparent border-brand-primary/40 text-brand-secondary text-xs px-2 py-1"
                               >
                                 {[item.selectedSize, item.selectedColor].filter(Boolean).join(' - ')}
                               </Badge>
@@ -443,7 +443,7 @@ export default function CartPage() {
                       <div className="flex flex-col lg:flex-row items-center justify-between gap-2 lg:gap-6">
                         {/* Price Display */}
                         <div className="text-center lg:text-right">
-                          <p className="text-lg font-bold text-yellow-700">
+                          <p className="text-lg font-bold text-brand-primary">
                             R$ {getPromotionalPrice(item.product).toFixed(2)}
                           </p>
                           <p className="text-sm text-gray-500">
@@ -507,10 +507,10 @@ export default function CartPage() {
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <Card className="shadow-lg border border-yellow-200 sticky top-8">
+            <Card className="shadow-lg border border-brand-primary/20 sticky top-8">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-6">
-                  <Crown className="h-6 w-6 text-yellow-600" />
+                  <Crown className="h-6 w-6 text-brand-primary" />
                   <h3 className="text-xl font-bold text-gray-800">Resumo do Pedido</h3>
                 </div>
 
@@ -522,7 +522,7 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Valor Total:</span>
-                    <span className="font-bold text-lg text-yellow-700">
+                    <span className="font-bold text-lg text-brand-primary">
                       R$ {state.items.reduce((sum, item) => sum + (getPromotionalPrice(item.product) * item.quantity), 0).toFixed(2)}
                     </span>
                   </div>
@@ -534,12 +534,12 @@ export default function CartPage() {
 
                 {/* Minimum Order Warning */}
                 {!minimumOrderMet && state.userType === 'wholesale' && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                  <div className="bg-brand-primary/5 border border-brand-primary/20 rounded-lg p-4 mb-6">
                     <div className="flex items-center gap-2 mb-2">
-                      <AlertCircle className="h-5 w-5 text-yellow-600" />
-                      <span className="font-semibold text-yellow-800">Pedido Mínimo</span>
+                      <AlertCircle className="h-5 w-5 text-brand-primary" />
+                      <span className="font-semibold text-brand-secondary">Pedido Mínimo</span>
                     </div>
-                    <p className="text-sm text-yellow-700">
+                    <p className="text-sm text-brand-primary">
                       Adicione mais {itemsRemaining} pares para atingir o mínimo de 8 pares.
                     </p>
                   </div>
@@ -547,12 +547,12 @@ export default function CartPage() {
 
                 {/* Retail Promotion Warning */}
                 {state.userType === 'retail' && !retailPromotionMet && (
-                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+                  <div className="bg-brand-secondary/5 border border-brand-secondary/30 rounded-lg p-4 mb-6">
                     <div className="flex items-center gap-2 mb-2">
-                      <AlertCircle className="h-5 w-5 text-orange-600" />
-                      <span className="font-semibold text-orange-800">Promoção de Brinde</span>
+                      <AlertCircle className="h-5 w-5 text-brand-secondary" />
+                      <span className="font-semibold text-brand-secondary">Promoção de Brinde</span>
                     </div>
-                    <p className="text-sm text-orange-700">
+                    <p className="text-sm text-brand-secondary">
                       {state.totalItems === 1 
                         ? "⚠️ Você está perdendo a promoção! Adicione mais 1 par para ganhar um brinde e participar da promoção!"
                         : `Adicione mais ${itemsRemaining} pares para ganhar um brinde e participar da promoção!`
@@ -585,7 +585,7 @@ export default function CartPage() {
                   <Button
                     variant="outline"
                     onClick={clearCart}
-                    className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                    className="w-full border border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
                     Limpar Carrinho

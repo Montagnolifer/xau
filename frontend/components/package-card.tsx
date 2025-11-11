@@ -23,7 +23,7 @@ export default function PackageCard({ package: pkg, featured = false }: PackageC
     <Card
       className={cn(
         "overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300",
-        featured && "ring-2 ring-yellow-400 shadow-2xl",
+        featured && "ring-2 ring-brand-primary shadow-2xl",
       )}
     >
       <div className="relative">
@@ -41,7 +41,7 @@ export default function PackageCard({ package: pkg, featured = false }: PackageC
           <div className="absolute top-4 left-4 flex flex-col gap-2">
             <Badge className="bg-white/90 text-gray-800 font-semibold">{pkg.category}</Badge>
             {pkg.isPopular && (
-              <Badge className="bg-yellow-500 text-white font-semibold flex items-center gap-1">
+              <Badge className="bg-brand-primary text-white font-semibold flex items-center gap-1">
                 <Crown className="h-3 w-3" />
                 Mais Popular
               </Badge>
@@ -60,8 +60,8 @@ export default function PackageCard({ package: pkg, featured = false }: PackageC
           {/* Featured Sparkles */}
           {featured && (
             <>
-              <Sparkles className="absolute top-4 right-4 h-6 w-6 text-yellow-400 animate-pulse" />
-              <Sparkles className="absolute bottom-4 left-4 h-4 w-4 text-yellow-400 animate-pulse delay-500" />
+              <Sparkles className="absolute top-4 right-4 h-6 w-6 text-brand-primary animate-pulse" />
+              <Sparkles className="absolute bottom-4 left-4 h-4 w-4 text-brand-primary animate-pulse delay-500" />
             </>
           )}
         </div>
@@ -79,7 +79,7 @@ export default function PackageCard({ package: pkg, featured = false }: PackageC
                   <span>{pkg.duration}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 text-yellow-500" />
+                  <Star className="h-4 w-4 text-brand-primary" />
                   <span>4.9</span>
                 </div>
               </div>

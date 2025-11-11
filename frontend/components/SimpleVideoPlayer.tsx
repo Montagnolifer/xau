@@ -55,7 +55,7 @@ export default function SimpleVideoPlayer({ product, isOpen, onClose }: SimpleVi
     <div className="fixed inset-0 z-50 flex items-center justify-end p-4">
       <div className="relative w-80 h-[500px] bg-black rounded-xl shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-yellow-600 to-amber-600 text-white">
+        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-brand-primary to-brand-secondary text-white">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
             <span className="text-sm font-medium">

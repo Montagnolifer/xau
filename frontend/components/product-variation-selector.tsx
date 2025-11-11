@@ -100,7 +100,7 @@ export default function ProductVariationSelector({ product, trigger }: ProductVa
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+          <Button className="w-full bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 hover:brightness-110">
             <Plus className="h-4 w-4 mr-2" />
             Adicionar ao Carrinho
           </Button>
@@ -109,7 +109,7 @@ export default function ProductVariationSelector({ product, trigger }: ProductVa
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Crown className="h-5 w-5 text-yellow-600" />
+            <Crown className="h-5 w-5 text-brand-primary" />
             Adicionar ao Carrinho
           </DialogTitle>
         </DialogHeader>
@@ -120,7 +120,7 @@ export default function ProductVariationSelector({ product, trigger }: ProductVa
             <h3 className="font-semibold text-lg text-gray-800 mb-1">{product.name}</h3>
             <p className="text-sm text-gray-500 mb-2">Ref: {product.reference || 'N/A'}</p>
             <div className="mb-2">
-              <p className="text-xl font-bold text-yellow-700">R$ {displayPrice.toFixed(2)}</p>
+              <p className="text-xl font-bold text-brand-primary">R$ {displayPrice.toFixed(2)}</p>
               {isWholesalePrice && product.price && (
                 <p className="text-xs text-gray-500 mt-1">
                   Preço normal: R$ {product.price.toFixed(2)}
@@ -140,7 +140,7 @@ export default function ProductVariationSelector({ product, trigger }: ProductVa
                     variant={selectedSize === size ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleSizeSelect(size)}
-                    className={selectedSize === size ? "bg-yellow-600 hover:bg-yellow-700" : "border-yellow-300 text-yellow-700 hover:bg-yellow-50"}
+                    className={selectedSize === size ? "bg-brand-primary hover:bg-brand-secondary text-white" : "border border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10"}
                   >
                     {size}
                   </Button>
@@ -162,8 +162,8 @@ export default function ProductVariationSelector({ product, trigger }: ProductVa
                     onClick={() => handleColorSelect(color)}
                     className={`flex items-center gap-2 ${
                       selectedColor === color.name 
-                        ? "bg-yellow-600 hover:bg-yellow-700" 
-                        : "border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                        ? "bg-brand-primary hover:bg-brand-secondary text-white" 
+                        : "border border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10"
                     }`}
                   >
                     <div
@@ -208,21 +208,21 @@ export default function ProductVariationSelector({ product, trigger }: ProductVa
 
           {/* Selected Variations Summary */}
           {(selectedSize || selectedColor) && (
-            <Card className="bg-yellow-50 border-yellow-200">
+            <Card className="bg-brand-primary/5 border border-brand-primary/20">
               <CardContent className="p-4">
                 <h4 className="font-semibold text-gray-700 mb-2">Seleção Atual:</h4>
                 <div className="flex flex-wrap gap-2">
                   {selectedSize && (
-                    <Badge variant="outline" className="border-yellow-300 text-yellow-700">
+                    <Badge variant="outline" className="border-brand-primary/30 text-brand-primary">
                       Tamanho: {selectedSize}
                     </Badge>
                   )}
                   {selectedColor && (
-                    <Badge variant="outline" className="border-yellow-300 text-yellow-700">
+                    <Badge variant="outline" className="border-brand-primary/30 text-brand-primary">
                       Cor: {selectedColor}
                     </Badge>
                   )}
-                  <Badge variant="outline" className="border-yellow-300 text-yellow-700">
+                  <Badge variant="outline" className="border-brand-primary/30 text-brand-primary">
                     Qtd: {quantity}
                   </Badge>
                 </div>
@@ -234,7 +234,7 @@ export default function ProductVariationSelector({ product, trigger }: ProductVa
           <Button
             onClick={handleAddToCart}
             disabled={!isVariationValid()}
-            className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-3"
+            className="w-full bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-semibold py-3 hover:brightness-110"
           >
             <ShoppingCart className="h-4 w-4 mr-2" />
             Adicionar ao Carrinho

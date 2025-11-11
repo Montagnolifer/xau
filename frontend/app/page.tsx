@@ -86,9 +86,9 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-yellow-50 flex items-center justify-center">
+      <div className="min-h-screen bg-brand-background flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 text-yellow-600 animate-spin mx-auto mb-4" />
+          <Loader2 className="h-12 w-12 text-brand-primary animate-spin mx-auto mb-4" />
           <p className="text-gray-600 text-lg">Carregando produtos...</p>
         </div>
       </div>
@@ -97,14 +97,14 @@ export default function HomePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-yellow-50 flex items-center justify-center">
+      <div className="min-h-screen bg-brand-background flex items-center justify-center">
         <div className="text-center">
           <Crown className="h-16 w-16 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-800 mb-2">Erro ao carregar produtos</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button 
             onClick={() => window.location.reload()}
-            className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-lg transition-colors"
+            className="px-6 py-2 rounded-lg transition-colors bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-sm hover:brightness-110"
           >
             Tentar novamente
           </button>
@@ -114,12 +114,12 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-yellow-50">
+    <div className="min-h-screen bg-brand-background">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Crown className="h-10 w-10 text-yellow-600" />
+            <Crown className="h-10 w-10 text-brand-primary" />
             <Image 
               src="/logo/logo.png" 
               alt="Emma Santoni" 
@@ -127,7 +127,7 @@ export default function HomePage() {
               height={80}
               className="h-20 w-auto"
             />
-            <Crown className="h-10 w-10 text-yellow-600" />
+            <Crown className="h-10 w-10 text-brand-primary" />
           </div>
           <p className="text-gray-600 text-lg max-w-3xl mx-auto">
             Cada detalhe pensado para acompanhar o seu ritmo.
@@ -142,8 +142,8 @@ export default function HomePage() {
               onClick={() => setSelectedCategory(category.id)}
               className={`px-6 py-3 text-sm font-semibold rounded-full transition-all duration-300 ${
                 selectedCategory === category.id
-                  ? "bg-yellow-600 text-white shadow-lg transform scale-105"
-                  : "border-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50 hover:border-yellow-400"
+                  ? "bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-lg transform scale-105"
+                  : "border border-brand-primary/30 text-brand-primary hover:bg-brand-primary/10"
               }`}
             >
               {category.name}
@@ -156,7 +156,7 @@ export default function HomePage() {
           <p className="text-gray-600">
             Mostrando {filteredProducts.length} produtos
             {selectedCategory !== "all" && (
-              <span className="font-semibold text-yellow-700">
+              <span className="font-semibold text-brand-primary">
                 {" "}
                 em {categories.find((c) => c.id === selectedCategory)?.name}
               </span>
@@ -167,7 +167,7 @@ export default function HomePage() {
         {/* All Products */}
         <div className="mb-12">
           <div className="flex items-center gap-3 mb-6">
-            <Crown className="h-6 w-6 text-yellow-600" />
+            <Crown className="h-6 w-6 text-brand-primary" />
             <h2 className="text-2xl font-bold text-gray-800">
               {selectedCategory === "all"
                 ? "Coleção Completa"
@@ -175,7 +175,7 @@ export default function HomePage() {
             </h2>
             {/* Indicador de produtos favoritados */}
             {filteredProducts.some(product => product.isFavorite) && (
-              <div className="flex items-center gap-1 bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-medium">
+              <div className="flex items-center gap-1 bg-brand-primary/10 text-brand-primary px-3 py-1 rounded-full text-sm font-medium">
                 <Star className="h-4 w-4 fill-current" />
                 <span>Favoritos!</span>
               </div>

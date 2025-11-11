@@ -57,7 +57,7 @@ export default function BottomNavigation() {
   // Não renderizar até que o componente esteja montado no cliente
   if (!mounted) {
     return (
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-yellow-50 to-amber-50 border-t-2 border-yellow-200 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-brand-background border-t border-brand-primary/20 shadow-lg">
         <div className="flex justify-around items-center h-16">
           {navItems.map((item) => (
             <div key={item.name} className="flex flex-col items-center w-full pt-2">
@@ -71,7 +71,7 @@ export default function BottomNavigation() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-yellow-50 to-amber-50 border-t-2 border-yellow-200 shadow-lg">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-brand-background border-t border-brand-primary/20 shadow-lg">
       <div className="flex justify-around items-center h-16">
         {navItems.map((item) => (
           <Link
@@ -80,8 +80,8 @@ export default function BottomNavigation() {
             className={cn(
               "flex flex-col items-center w-full pt-2 transition-colors duration-200 relative",
               pathname === item.href
-                ? "text-yellow-700"
-                : "text-gray-600 hover:text-yellow-600"
+                ? "text-brand-primary"
+                : "text-gray-600 hover:text-brand-primary"
             )}
           >
             <div className="relative">

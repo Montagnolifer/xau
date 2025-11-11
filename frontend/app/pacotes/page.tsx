@@ -40,9 +40,9 @@ export default function PacotesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-yellow-50 flex items-center justify-center">
+      <div className="min-h-screen bg-brand-background flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 text-yellow-600 animate-spin mx-auto mb-4" />
+          <Loader2 className="h-12 w-12 text-brand-primary animate-spin mx-auto mb-4" />
           <p className="text-gray-600 text-lg">Carregando pacotes...</p>
         </div>
       </div>
@@ -51,14 +51,14 @@ export default function PacotesPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-yellow-50 flex items-center justify-center">
+      <div className="min-h-screen bg-brand-background flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
           <Package className="h-16 w-16 text-red-500 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-800 mb-2">Erro ao carregar</h3>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
+            className="px-6 py-2 text-white rounded-lg transition-colors bg-gradient-to-r from-brand-primary to-brand-secondary hover:brightness-110"
           >
             Tentar Novamente
           </button>
@@ -68,16 +68,16 @@ export default function PacotesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-yellow-50">
+    <div className="min-h-screen bg-brand-background">
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Package className="h-10 w-10 text-yellow-600" />
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-700 to-amber-700 bg-clip-text text-transparent">
+            <Package className="h-10 w-10 text-brand-primary" />
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">
               Pacotes de serviços
             </h1>
-            <Package className="h-10 w-10 text-yellow-600" />
+            <Package className="h-10 w-10 text-brand-primary" />
           </div>
           <p className="text-gray-600 text-lg max-w-3xl mx-auto">
             Soluções completas de branding e marketing para construir sua marca de calçados
@@ -90,8 +90,8 @@ export default function PacotesPage() {
             onClick={() => setSelectedCategory("all")}
             className={`px-6 py-3 text-sm font-semibold rounded-full transition-all duration-300 ${
               selectedCategory === "all"
-                ? "bg-yellow-600 text-white shadow-lg transform scale-105"
-                : "border-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50 hover:border-yellow-400"
+                ? "bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-lg transform scale-105"
+                : "border border-brand-primary/30 text-brand-primary hover:bg-brand-primary/10"
             }`}
           >
             Todos os Pacotes
@@ -102,8 +102,8 @@ export default function PacotesPage() {
               onClick={() => setSelectedCategory(category)}
               className={`px-6 py-3 text-sm font-semibold rounded-full transition-all duration-300 ${
                 selectedCategory === category
-                  ? "bg-yellow-600 text-white shadow-lg transform scale-105"
-                  : "border-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50 hover:border-yellow-400"
+                  ? "bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-lg transform scale-105"
+                  : "border border-brand-primary/30 text-brand-primary hover:bg-brand-primary/10"
               }`}
             >
               {category}
@@ -116,7 +116,7 @@ export default function PacotesPage() {
           <p className="text-gray-600">
             Mostrando {filteredPackages.length} pacotes
             {selectedCategory !== "all" && (
-              <span className="font-semibold text-yellow-700"> em {selectedCategory}</span>
+              <span className="font-semibold text-brand-primary"> em {selectedCategory}</span>
             )}
           </p>
         </div>
@@ -124,7 +124,7 @@ export default function PacotesPage() {
         {/* All Packages */}
         <div className="space-y-8">
           <div className="flex items-center gap-3 mb-6">
-            <TrendingUp className="h-6 w-6 text-yellow-600" />
+            <TrendingUp className="h-6 w-6 text-brand-primary" />
             <h2 className="text-2xl font-bold text-gray-800">
               {selectedCategory === "all" ? "Todos os Pacotes de Serviços" : `Pacotes ${selectedCategory}`}
             </h2>
@@ -145,7 +145,7 @@ export default function PacotesPage() {
             <p className="text-gray-500">Tente selecionar uma categoria diferente</p>
             <button
               onClick={() => setSelectedCategory("all")}
-              className="mt-4 px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
+              className="mt-4 px-6 py-2 text-white rounded-lg transition-colors bg-gradient-to-r from-brand-primary to-brand-secondary hover:brightness-110"
             >
               Mostrar Todos os Pacotes
             </button>
@@ -153,17 +153,17 @@ export default function PacotesPage() {
         )}
 
         {/* CTA Section */}
-        <div className="mt-16 text-center bg-gradient-to-r from-yellow-600 via-amber-600 to-orange-600 rounded-2xl p-8 text-white shadow-2xl">
-          <Crown className="h-16 w-16 mx-auto mb-6 text-yellow-200" />
+        <div className="mt-16 text-center bg-gradient-to-r from-brand-primary via-brand-primary to-brand-secondary rounded-2xl p-8 text-white shadow-2xl">
+          <Crown className="h-16 w-16 mx-auto mb-6 text-white/80" />
           <h3 className="text-3xl font-bold mb-4">Precisa de uma solução personalizada?</h3>
-          <p className="text-xl mb-8 text-yellow-100 max-w-2xl mx-auto">
+          <p className="text-xl mb-8 text-white/80 max-w-2xl mx-auto">
             Deixe-nos criar um pacote de marca personalizado, adaptado às necessidades e objetivos do seu negócio
           </p>
           <a
             href={`https://wa.me/${whatsappNumber}?text=Preciso de um pacote de marca personalizado`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block bg-white text-yellow-700 font-bold py-4 px-12 rounded-full hover:bg-yellow-50 transition-colors text-xl shadow-lg transform hover:scale-105"
+            className="inline-block bg-white text-brand-secondary font-bold py-4 px-12 rounded-full hover:bg-brand-secondary/10 transition-colors text-xl shadow-lg transform hover:scale-105"
           >
             Solicitar pacote personalizado
           </a>

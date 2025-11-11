@@ -287,7 +287,7 @@ export function ShippingInfoCard() {
                     Completo
                   </Badge>
                 ) : (
-                  <Badge variant="outline" className="text-xs border-yellow-300 text-yellow-700">
+                  <Badge variant="outline" className="text-xs border-brand-primary/30 text-brand-primary">
                     Incompleto
                   </Badge>
                 )}

@@ -195,31 +195,31 @@ function RegisterForm() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-yellow-50 to-orange-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-brand-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-1">
           <Link href="/" className="inline-block mb-6">
-            <Button variant="ghost" size="icon" className="text-yellow-700 hover:bg-yellow-100">
+            <Button variant="ghost" size="icon" className="text-brand-primary hover:bg-brand-primary/10">
               <ArrowLeft className="h-6 w-6" />
             </Button>
           </Link>
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Crown className="h-10 w-10 text-yellow-600" />
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-700 to-amber-700 bg-clip-text text-transparent">
+            <Crown className="h-10 w-10 text-brand-primary" />
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">
               Emma Santoni
             </h1>
-            <Crown className="h-10 w-10 text-yellow-600" />
+            <Crown className="h-10 w-10 text-brand-primary" />
           </div>
         </div>
 
         {/* Register Form */}
-        <Card className="border-2 border-yellow-200 shadow-xl bg-gradient-to-b from-white to-yellow-50">
+        <Card className="border border-brand-primary/20 shadow-xl bg-white">
           <CardHeader className="text-center pb-4">
             <h2 className="text-2xl font-bold text-gray-800">Criar uma conta</h2>
             <p className="text-gray-600">Junte-se à nossa rede atacadista premium</p>
             {isWholesale && (
-              <Badge className="bg-gradient-to-r from-yellow-600 to-amber-600 text-white font-semibold mt-2">
+              <Badge className="bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-semibold mt-2">
                 <Crown className="h-4 w-4 mr-1" />
                 Cadastro Atacadista
               </Badge>
@@ -234,7 +234,7 @@ function RegisterForm() {
                   Nome completo
                 </Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-yellow-600" />
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-brand-primary" />
                   <Input
                     id="name"
                     name="name"
@@ -242,7 +242,7 @@ function RegisterForm() {
                     placeholder="Digite seu nome completo"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="pl-10 border-2 border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400"
+                    className="pl-10 border border-brand-primary/20 focus:border-brand-primary focus:ring-brand-primary"
                     required
                     disabled={isLoading}
                   />
@@ -255,7 +255,7 @@ function RegisterForm() {
                   Número do WhatsApp
                 </Label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-yellow-600" />
+                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-brand-primary" />
                   <Input
                     id="whatsapp"
                     name="whatsapp"
@@ -263,7 +263,7 @@ function RegisterForm() {
                     placeholder="+55 (11) 99999-9999"
                     value={formatWhatsApp(formData.whatsapp)}
                     onChange={handleInputChange}
-                    className="pl-10 border-2 border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400"
+                    className="pl-10 border border-brand-primary/20 focus:border-brand-primary focus:ring-brand-primary"
                     required
                     disabled={isLoading}
                   />
@@ -276,7 +276,7 @@ function RegisterForm() {
                   CEP
                 </Label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-yellow-600" />
+                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-brand-primary" />
                   <Input
                     id="zipCode"
                     name="zipCode"
@@ -284,7 +284,7 @@ function RegisterForm() {
                     placeholder="00000-000"
                     value={formatZipCode(formData.zipCode)}
                     onChange={handleInputChange}
-                    className="pl-10 border-2 border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400"
+                    className="pl-10 border border-brand-primary/20 focus:border-brand-primary focus:ring-brand-primary"
                     required
                     disabled={isLoading}
                   />
@@ -304,7 +304,7 @@ function RegisterForm() {
                     placeholder="Digite sua senha"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="border-2 border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400"
+                    className="border border-brand-primary/20 focus:border-brand-primary focus:ring-brand-primary"
                     required
                     disabled={isLoading}
                   />
@@ -334,7 +334,7 @@ function RegisterForm() {
                     placeholder="Confirme sua senha"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className="border-2 border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400"
+                    className="border border-brand-primary/20 focus:border-brand-primary focus:ring-brand-primary"
                     required
                     disabled={isLoading}
                   />
@@ -357,7 +357,7 @@ function RegisterForm() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <div className="flex items-center gap-2">
@@ -374,7 +374,7 @@ function RegisterForm() {
             <div className="text-center pt-4">
               <p className="text-gray-600">
                   Já tem uma conta?{" "}
-                <Link href="/auth/login" className="text-yellow-600 hover:text-yellow-700 font-semibold underline">
+                <Link href="/auth/login" className="text-brand-primary hover:text-brand-secondary font-semibold underline">
                   Entre aqui
                 </Link>
               </p>
@@ -390,23 +390,23 @@ function RegisterForm() {
 export default function RegisterPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 via-yellow-50 to-orange-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-brand-background flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-1">
             <Link href="/" className="inline-block mb-6">
-              <Button variant="ghost" size="icon" className="text-yellow-700 hover:bg-yellow-100">
+              <Button variant="ghost" size="icon" className="text-brand-primary hover:bg-brand-primary/10">
                 <ArrowLeft className="h-6 w-6" />
               </Button>
             </Link>
             <div className="flex items-center justify-center gap-3 mb-4">
-              <Crown className="h-10 w-10 text-yellow-600" />
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-700 to-amber-700 bg-clip-text text-transparent">
+              <Crown className="h-10 w-10 text-brand-primary" />
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">
                 Emma Santoni
               </h1>
-              <Crown className="h-10 w-10 text-yellow-600" />
+              <Crown className="h-10 w-10 text-brand-primary" />
             </div>
           </div>
-          <Card className="border-2 border-yellow-200 shadow-xl bg-gradient-to-b from-white to-yellow-50">
+          <Card className="border border-brand-primary/20 shadow-xl bg-white">
             <CardContent className="flex items-center justify-center py-12">
               <LoadingSpinner size="lg" />
             </CardContent>

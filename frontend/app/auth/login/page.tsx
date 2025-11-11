@@ -189,27 +189,27 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-yellow-50 to-orange-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-brand-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-1">
           <Link href="/" className="inline-block mb-6">
-            <Button variant="ghost" size="icon" className="text-yellow-700 hover:bg-yellow-100">
+            <Button variant="ghost" size="icon" className="text-brand-primary hover:bg-brand-primary/10">
               <ArrowLeft className="h-6 w-6" />
             </Button>
           </Link>
 
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Crown className="h-10 w-10 text-yellow-600" />
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-700 to-amber-700 bg-clip-text text-transparent">
+            <Crown className="h-10 w-10 text-brand-primary" />
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">
               Emma Santoni
             </h1>
-            <Crown className="h-10 w-10 text-yellow-600" />
+            <Crown className="h-10 w-10 text-brand-primary" />
           </div>
         </div>
 
         {/* Login Form */}
-        <Card className="border-2 border-yellow-200 shadow-xl bg-gradient-to-b from-white to-yellow-50">
+        <Card className="border border-brand-primary/20 shadow-xl bg-white">
           <CardHeader className="text-center pb-4">
             <h2 className="text-2xl font-bold text-gray-800">Bem vindo de volta</h2>
             <p className="text-gray-600">Entre na sua conta</p>
@@ -235,7 +235,7 @@ export default function LoginPage() {
                   WhatsApp
                 </Label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-yellow-600" />
+                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-brand-primary" />
                   <Input
                     id="whatsapp"
                     name="whatsapp"
@@ -243,7 +243,7 @@ export default function LoginPage() {
                     placeholder="+55 (11) 99999-9999"
                     value={formatWhatsApp(formData.whatsapp)}
                     onChange={handleInputChange}
-                    className="pl-10 border-2 border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400"
+                    className="pl-10 border border-brand-primary/20 focus:border-brand-primary focus:ring-brand-primary"
                     required
                     disabled={isLoading}
                   />
@@ -256,7 +256,7 @@ export default function LoginPage() {
                   Senha
                 </Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-yellow-600" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-brand-primary" />
                   <Input
                     id="password"
                     name="password"
@@ -264,14 +264,14 @@ export default function LoginPage() {
                     placeholder="Digite sua senha"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="pl-10 pr-10 border-2 border-yellow-200 focus:border-yellow-400 focus:ring-yellow-400"
+                    className="pl-10 pr-10 border border-brand-primary/20 focus:border-brand-primary focus:ring-brand-primary"
                     required
                     disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-yellow-600 hover:text-yellow-700"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-brand-primary hover:text-brand-secondary"
                     disabled={isLoading}
                   >
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -283,7 +283,7 @@ export default function LoginPage() {
               <div className="text-right">
                 <Link
                   href="/auth/forgot-password"
-                  className="text-yellow-600 hover:text-yellow-700 text-sm font-medium"
+                  className="text-brand-primary hover:text-brand-secondary text-sm font-medium"
                 >
                   Esqueceu sua senha?
                 </Link>
@@ -293,7 +293,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white font-bold py-3 text-lg shadow-lg transform hover:scale-105 transition-all duration-300"
+                className="w-full bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-bold py-3 text-lg shadow-lg transform hover:scale-105 transition-all duration-300"
               >
                 {isLoading ? (
                   <div className="flex items-center gap-2">
@@ -312,10 +312,10 @@ export default function LoginPage() {
             {/* Divider */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-yellow-300" />
+                <div className="w-full border-t border-brand-primary/20" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-gradient-to-b from-white to-yellow-50 text-gray-500">
+                <span className="px-2 bg-white text-gray-500">
                   Novo em nossa plataforma?
                 </span>
               </div>
@@ -327,7 +327,7 @@ export default function LoginPage() {
               <Link href="/auth/register">
                 <Button
                   variant="outline"
-                  className="w-full border-2 border-yellow-400 text-yellow-700 hover:bg-yellow-50 font-bold py-3"
+                  className="w-full border border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10 font-bold py-3"
                 >
                   Criar Conta Premium
                 </Button>
@@ -335,13 +335,13 @@ export default function LoginPage() {
             </div>
 
             {/* Contact Support */}
-            <div className="text-center pt-4 border-t border-yellow-200">
+            <div className="text-center pt-4 border-t border-brand-primary/20">
               <p className="text-sm text-gray-600 mb-2">Precisa de ajuda para acessar sua conta?</p>
               <a
                 href={`https://wa.me/${cleanWhatsApp(whatsappNumber)}?text=Preciso de ajuda com o login`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-yellow-600 hover:text-yellow-700 font-medium text-sm"
+                className="text-brand-primary hover:text-brand-secondary font-medium text-sm"
               >
                 Entre em contato com o suporte via WhatsApp
               </a>
@@ -351,7 +351,7 @@ export default function LoginPage() {
 
         {/* Security Badge */}
         <div className="text-center mt-6">
-          <Badge variant="outline" className="border-yellow-300 text-yellow-700">
+          <Badge variant="outline" className="border-brand-primary/30 text-brand-primary">
             🔒 Conexão criptografada SSL segura
           </Badge>
         </div>

@@ -84,7 +84,7 @@ export default function ProductWholesaleCard({ product }: ProductWholesaleCardPr
 
   return (
     <>
-      <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-yellow-100">
+      <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border border-brand-primary/20">
         <div className="relative">
           {/* Image Carousel */}
           <div className="relative h-64 md:h-80 w-full">
@@ -125,12 +125,12 @@ export default function ProductWholesaleCard({ product }: ProductWholesaleCardPr
             {/* Badges */}
             <div className="absolute top-4 left-4 flex flex-col gap-2">
               {product.isFavorite ? (
-                <Badge className="bg-yellow-500 text-white font-semibold flex items-center gap-1">
+                <Badge className="bg-brand-secondary text-white font-semibold flex items-center gap-1">
                   <Star className="h-3 w-3 fill-current" />
                   Destaque
                 </Badge>
               ) : (
-                <Badge className="bg-yellow-600 text-white font-semibold">
+                <Badge className="bg-brand-primary text-white font-semibold">
                   {getCategoryDisplay(product.category || "")}
                 </Badge>
               )}
@@ -152,7 +152,7 @@ export default function ProductWholesaleCard({ product }: ProductWholesaleCardPr
             {/* Favorite Indicator */}
             {product.isFavorite && (
               <div className="absolute top-4 right-4 transform translate-x-16">
-                <div className="bg-yellow-500 text-white p-2 rounded-full shadow-lg">
+                <div className="bg-brand-secondary text-white p-2 rounded-full shadow-lg">
                   <Star className="h-4 w-4 fill-current" />
                 </div>
               </div>
@@ -162,7 +162,7 @@ export default function ProductWholesaleCard({ product }: ProductWholesaleCardPr
             {product.youtubeUrl && (
               <button
                 onClick={openVideoModal}
-                className="absolute bottom-4 right-4 bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white p-3 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 z-10"
+                className="absolute bottom-4 right-4 bg-gradient-to-r from-brand-primary to-brand-secondary text-white p-3 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 z-10 hover:brightness-110"
                 title="Ver vídeo do produto"
               >
                 <Play className="h-5 w-5 fill-current" />
@@ -175,7 +175,7 @@ export default function ProductWholesaleCard({ product }: ProductWholesaleCardPr
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
-                  {/*<Crown className="h-5 w-5 text-yellow-600" />*/}
+                  {/*<Crown className="h-5 w-5 text-brand-primary" />*/}
                   <h3 className="text-lg font-bold text-gray-800 leading-tight break-words">{product.name}</h3>
                 </div>
                 {/* <p className="text-sm text-gray-500 mb-1">Ref: {product.reference}</p> */}
@@ -185,7 +185,7 @@ export default function ProductWholesaleCard({ product }: ProductWholesaleCardPr
                 {displayPrice && (
                   <div className="mb-4">
                     <div className="mb-2">
-                      <p className="text-xl font-bold text-yellow-700">R$ {displayPrice.toFixed(2)}</p>
+                      <p className="text-xl font-bold text-brand-primary">R$ {displayPrice.toFixed(2)}</p>
                       {isWholesalePrice && product.price && (
                         <p className="text-xs text-gray-500 mt-1">
                           Preço normal: R$ {product.price.toFixed(2)}
@@ -194,7 +194,7 @@ export default function ProductWholesaleCard({ product }: ProductWholesaleCardPr
                       {/* Mensagem para visitantes não logados */}
                       {!isAuthenticated && (
                         <p className="text-xs text-gray-500 mt-1">
-                          <Link href="/auth/login" className="text-yellow-600 hover:text-yellow-700 underline">
+                          <Link href="/auth/login" className="text-brand-primary hover:text-brand-secondary underline">
                             Faça login para participar das promoções
                           </Link>
                         </p>
@@ -218,7 +218,7 @@ export default function ProductWholesaleCard({ product }: ProductWholesaleCardPr
                 <p className="text-sm font-semibold text-gray-700 mb-3">Tamanhos Disponíveis</p>
                 <div className="flex flex-wrap gap-2">
                   {product.sizes.map((size, index) => (
-                    <Badge key={index} variant="outline" className="border-yellow-300 text-yellow-700 text-xs px-3 py-1">
+                    <Badge key={index} variant="outline" className="border-brand-primary/30 text-brand-primary text-xs px-3 py-1">
                       {size}
                     </Badge>
                   ))}
@@ -234,7 +234,7 @@ export default function ProductWholesaleCard({ product }: ProductWholesaleCardPr
                   {product.colors.map((color, index) => (
                     <div
                       key={index}
-                      className="flex items-center gap-2 border border-yellow-300 rounded-lg px-3 py-1 text-xs"
+                      className="flex items-center gap-2 border border-brand-primary/30 rounded-lg px-3 py-1 text-xs"
                     >
                       <div
                         className="w-3 h-3 rounded-full border border-gray-300"
@@ -321,7 +321,7 @@ export default function ProductWholesaleCard({ product }: ProductWholesaleCardPr
                     onClick={() => setCurrentImageIndex(index)}
                     className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
                       index === currentImageIndex 
-                        ? 'border-yellow-400 scale-110' 
+                        ? 'border-brand-primary scale-110' 
                         : 'border-white/30 hover:border-white/50'
                     }`}
                   >
