@@ -2,6 +2,7 @@ import { config } from '../config';
 import { BaseApiClient } from './base-client';
 import { UsersApi } from './users-api';
 import { ProductsApi } from './products-api';
+import { CategoriesApi } from './categories-api';
 import { ordersApi } from './orders-api';
 
 // Exportar interfaces e tipos
@@ -9,12 +10,14 @@ export * from './base-client';
 export * from './users-api';
 export * from './products-api';
 export * from './orders-api';
+export * from './categories-api';
 
 // Criar instâncias das APIs
 const baseUrl = config.api.baseUrl;
 
 export const usersApi = new UsersApi(baseUrl);
 export const productsApi = new ProductsApi(baseUrl);
+export const categoriesApi = new CategoriesApi(baseUrl);
 
 // Cliente API principal (mantém compatibilidade com código existente)
 export class ApiClient extends BaseApiClient {
@@ -62,6 +65,31 @@ export class ApiClient extends BaseApiClient {
 
   async getFavorites(): Promise<any[]> {
     return productsApi.getFavorites();
+  }
+
+  // Métodos de categorias
+  async getCategoriesTree() {
+    return categoriesApi.getCategoriesTree();
+  }
+
+  async getCategoriesFlat() {
+    return categoriesApi.getCategoriesFlat();
+  }
+
+  async getCategory(id: number) {
+    return categoriesApi.getCategory(id);
+  }
+
+  async createCategory(payload: any) {
+    return categoriesApi.createCategory(payload);
+  }
+
+  async updateCategory(id: number, payload: any) {
+    return categoriesApi.updateCategory(id, payload);
+  }
+
+  async deleteCategory(id: number) {
+    return categoriesApi.deleteCategory(id);
   }
 
   // Métodos de pedidos

@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -14,14 +14,32 @@ import {
   Bell,
   Search,
   Settings,
-  BarChart3,
   ShoppingCart,
   Users,
+  ChevronDown,
+  Layers,
 } from "lucide-react"
 import Link from "next/link"
 import { Suspense } from "react"
 import { apiClient } from "@/lib/api"
 import { Toaster } from "@/components/ui/toaster"
+
+type IconComponent = typeof Home
+
+type NavigationItem =
+  | {
+      name: string
+      href: string
+      icon: IconComponent
+      isExpandable?: false
+    }
+  | {
+      name: string
+      id: string
+      icon: IconComponent
+      isExpandable: true
+      subItems: Array<{ name: string; href: string; icon: IconComponent }>
+    }
 
 interface AdminLayoutProps {
   children: React.ReactNode
@@ -31,6 +49,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([])
   const [adminName, setAdminName] = useState<string | null>(null)
   const [adminEmail, setAdminEmail] = useState<string | null>(null)
   const router = useRouter()
@@ -57,6 +76,53 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     router.push("/admin/")
   }
 
+  const toggleMenu = (menuId: string) => {
+    setExpandedMenus((prev) =>
+      prev.includes(menuId) ? prev.filter((item) => item !== menuId) : [...prev, menuId],
+    )
+  }
+
+  const navigation = useMemo<NavigationItem[]>(
+    () => [
+      { name: "Dashboard", href: "/admin", icon: Home },
+      {
+        name: "Produtos",
+        icon: Package,
+        id: "products",
+        isExpandable: true,
+        subItems: [
+          { name: "Listar Produtos", href: "/admin/produtos", icon: Package },
+          { name: "Categorias", href: "/admin/category", icon: Layers },
+        ],
+      },
+      { name: "Pedidos", href: "/admin/pedidos", icon: ShoppingCart },
+      { name: "Clientes", href: "/admin/clientes", icon: Users },
+      { name: "Configurações", href: "/admin/configuracoes", icon: Settings },
+    ],
+    [],
+  )
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return
+    }
+
+    type ExpandableItem = Extract<NavigationItem, { isExpandable: true }>
+
+    const expandableItems = navigation.filter(
+      (item): item is ExpandableItem => item.isExpandable === true,
+    )
+
+    const expandedByPath = expandableItems
+      .filter((item) => item.subItems.some((subItem) => pathname?.startsWith(subItem.href)))
+      .map((item) => item.id)
+
+    setExpandedMenus((prev) => {
+      const merged = new Set<string>([...prev, ...expandedByPath])
+      return Array.from(merged)
+    })
+  }, [isAuthenticated, pathname, navigation])
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
@@ -75,14 +141,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </Suspense>
     )
   }
-
-  const navigation = [
-    { name: "Dashboard", href: "/admin", icon: Home },
-    { name: "Produtos", href: "/admin/produtos", icon: Package },
-    { name: "Pedidos", href: "/admin/pedidos", icon: ShoppingCart },
-    { name: "Clientes", href: "/admin/clientes", icon: Users },
-    { name: "Configurações", href: "/admin/configuracoes", icon: Settings },
-  ]
 
   return (
     <div className="flex min-h-screen bg-slate-50">
@@ -115,11 +173,65 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <div className="space-y-2">
             {navigation.map((item) => {
               const Icon = item.icon
+
+              if ("isExpandable" in item && item.isExpandable) {
+                const subItems = item.subItems
+                const isExpanded =
+                  expandedMenus.includes(item.id) ||
+                  subItems.some((subItem) => pathname === subItem.href || pathname?.startsWith(subItem.href))
+                return (
+                  <div key={item.id} className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => toggleMenu(item.id)}
+                      className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition-all duration-200 hover:bg-slate-100 hover:text-slate-900"
+                    >
+                      <span className="flex items-center">
+                        <Icon className="mr-3 h-5 w-5 text-slate-500 group-hover:text-slate-700" />
+                        {item.name}
+                      </span>
+                      <ChevronDown
+                        className={`h-4 w-4 text-slate-500 transition-transform duration-200 ${
+                          isExpanded ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                    {isExpanded && (
+                      <div className="ml-4 space-y-1">
+                        {subItems.map((subItem) => {
+                          const SubIcon = subItem.icon
+                          const isSubActive = pathname === subItem.href
+                          return (
+                            <Link
+                              key={subItem.href}
+                              href={subItem.href}
+                              className={`flex items-center rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                                isSubActive
+                                  ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/25"
+                                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                              }`}
+                              onClick={() => setSidebarOpen(false)}
+                            >
+                              <SubIcon
+                                className={`mr-3 h-4 w-4 ${
+                                  isSubActive ? "text-white" : "text-slate-400 group-hover:text-slate-600"
+                                }`}
+                              />
+                              {subItem.name}
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              }
+
               const isActive = pathname === item.href
 
               return (
                 <Link
-                  key={item.name}
+                  key={item.href}
                   href={item.href}
                   className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group ${
                     isActive
