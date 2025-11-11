@@ -47,24 +47,57 @@ export function transformBackendProduct(backendProduct: any): Product {
     })
   }
 
-  // Transformar imagens - ordenar com a imagem principal primeiro
-  const images = backendProduct.images 
-    ? backendProduct.images
-        .sort((a: any, b: any) => {
-          // Colocar imagem principal (isMain=true) primeiro
-          if (a.isMain && !b.isMain) return -1
-          if (!a.isMain && b.isMain) return 1
-          return 0
-        })
-        .map((img: any) => {
-          // Se a imagem tem uma URL completa, usar ela, senão construir a URL
-          const imageUrl = img.url.startsWith('http') 
-            ? img.url 
-            : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}${img.url}`
-          
-          return imageUrl
-        })
-    : ['/placeholder.svg?height=500&width=500']
+  const baseImageUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+
+  const extractImageUrl = (image: any): string | null => {
+    if (!image) {
+      return null
+    }
+
+    if (typeof image === 'string') {
+      return image.startsWith('http') ? image : `${baseImageUrl}${image}`
+    }
+
+    if (typeof image === 'object') {
+      const urlCandidate = image.url ?? image.path ?? image.src ?? image.location
+      if (typeof urlCandidate === 'string' && urlCandidate.length > 0) {
+        return urlCandidate.startsWith('http')
+          ? urlCandidate
+          : `${baseImageUrl}${urlCandidate}`
+      }
+    }
+
+    return null
+  }
+
+  const imageEntries = Array.isArray(backendProduct.images)
+    ? [...backendProduct.images]
+    : []
+
+  imageEntries.sort((a: any, b: any) => {
+    const aMain = typeof a === 'object' && !!a?.isMain
+    const bMain = typeof b === 'object' && !!b?.isMain
+    if (aMain === bMain) {
+      return 0
+    }
+    return aMain ? -1 : 1
+  })
+
+  const images =
+    imageEntries
+      .map(extractImageUrl)
+      .filter((url): url is string => typeof url === 'string')
+      .filter((url, index, self) => url && self.indexOf(url) === index)
+
+  if (!images || images.length === 0) {
+    images.push('/placeholder.svg?height=500&width=500')
+  }
+
+  const categoryEntity = backendProduct.categoryEntity ?? null
+  const normalizedCategoryId =
+    backendProduct.categoryId ?? categoryEntity?.id ?? undefined
+  const normalizedCategoryName =
+    categoryEntity?.name ?? backendProduct.category ?? undefined
 
   return {
     id: backendProduct.id,
@@ -74,7 +107,8 @@ export function transformBackendProduct(backendProduct: any): Product {
     wholesalePrice: backendProduct.wholesalePrice ? parseFloat(backendProduct.wholesalePrice) : undefined,
     reference: backendProduct.sku || `REF${backendProduct.id}`,
     sku: backendProduct.sku,
-    category: backendProduct.category,
+    category: normalizedCategoryName,
+    categoryId: normalizedCategoryId,
     images,
     sizes: sizes.length > 0 ? sizes : undefined,
     colors: colors.length > 0 ? colors : undefined,
