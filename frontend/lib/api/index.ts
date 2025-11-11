@@ -2,14 +2,12 @@ import { config } from '../config';
 import { BaseApiClient } from './base-client';
 import { UsersApi } from './users-api';
 import { ProductsApi } from './products-api';
-import { PackagesApi } from './packages-api';
 import { ordersApi } from './orders-api';
 
 // Exportar interfaces e tipos
 export * from './base-client';
 export * from './users-api';
 export * from './products-api';
-export * from './packages-api';
 export * from './orders-api';
 
 // Criar instâncias das APIs
@@ -17,7 +15,6 @@ const baseUrl = config.api.baseUrl;
 
 export const usersApi = new UsersApi(baseUrl);
 export const productsApi = new ProductsApi(baseUrl);
-export const packagesApi = new PackagesApi(baseUrl);
 
 // Cliente API principal (mantém compatibilidade com código existente)
 export class ApiClient extends BaseApiClient {
@@ -65,35 +62,6 @@ export class ApiClient extends BaseApiClient {
 
   async getFavorites(): Promise<any[]> {
     return productsApi.getFavorites();
-  }
-
-  // Métodos de pacotes
-  async createPackage(packageData: any, imageFile?: File): Promise<any> {
-    return packagesApi.createPackage(packageData, imageFile);
-  }
-
-  async getPackages(): Promise<any> {
-    return packagesApi.getPackages();
-  }
-
-  async getPackagesAdmin(): Promise<any> {
-    return packagesApi.getPackagesAdmin();
-  }
-
-  async getPackage(id: number): Promise<any> {
-    return packagesApi.getPackage(id);
-  }
-
-  async getPackageAdmin(id: number): Promise<any> {
-    return packagesApi.getPackageAdmin(id);
-  }
-
-  async updatePackage(id: number, packageData: any, imageFile?: File): Promise<any> {
-    return packagesApi.updatePackage(id, packageData, imageFile);
-  }
-
-  async deletePackage(id: number): Promise<void> {
-    return packagesApi.deletePackage(id);
   }
 
   // Métodos de pedidos

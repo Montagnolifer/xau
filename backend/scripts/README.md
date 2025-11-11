@@ -69,7 +69,7 @@ Os seguintes scripts já estão configurados para executar automaticamente:
 ### Cópia Automática
 - Quando você faz upload de uma imagem através da API, ela é automaticamente copiada para `dist/uploads`
 - Não é necessário executar comandos manuais
-- Funciona para produtos e pacotes
+- Funciona para produtos
 
 ### Monitoramento em Tempo Real
 - O script `watch-uploads.js` monitora a pasta `uploads`

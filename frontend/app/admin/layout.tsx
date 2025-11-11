@@ -17,7 +17,6 @@ import {
   BarChart3,
   ShoppingCart,
   Users,
-  Package2,
 } from "lucide-react"
 import Link from "next/link"
 import { Suspense } from "react"
@@ -80,7 +79,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const navigation = [
     { name: "Dashboard", href: "/admin", icon: Home },
     { name: "Produtos", href: "/admin/produtos", icon: Package },
-    { name: "Pacotes", href: "/admin/pacotes", icon: Package2 },
     { name: "Pedidos", href: "/admin/pedidos", icon: ShoppingCart },
     { name: "Clientes", href: "/admin/clientes", icon: Users },
     { name: "Configurações", href: "/admin/configuracoes", icon: Settings },

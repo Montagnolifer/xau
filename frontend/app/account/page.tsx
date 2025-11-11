@@ -138,12 +138,6 @@ export default function AccountPage() {
               </Button>
             </Link>
 
-            <Link href="/pacotes">
-              <Button className="w-full bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-semibold py-3 mb-3 hover:brightness-110">
-                Ver pacotes
-              </Button>
-            </Link>
-
             <Link href="/aulas">
               <Button className="w-full bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-semibold py-3 mb-3 hover:brightness-110">
                 Acessar educação

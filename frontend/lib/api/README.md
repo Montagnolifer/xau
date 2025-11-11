@@ -9,7 +9,6 @@ api/
 ├── base-client.ts      # Cliente base com métodos comuns
 ├── users-api.ts        # API de usuários e autenticação
 ├── products-api.ts     # API de produtos
-├── packages-api.ts     # API de pacotes
 ├── index.ts           # Arquivo principal que exporta tudo
 └── README.md          # Esta documentação
 ```
@@ -21,26 +20,22 @@ api/
 import { apiClient } from '@/lib/api';
 
 // Usar como antes
-const packages = await apiClient.getPackages();
+const products = await apiClient.getProducts();
 ```
 
 ### Importação modular (recomendado)
 ```typescript
-import { packagesApi, productsApi, usersApi } from '@/lib/api';
+import { productsApi, usersApi, ordersApi } from '@/lib/api';
 
 // Usar APIs específicas
-const packages = await packagesApi.getPackages();
 const products = await productsApi.getProducts();
 const users = await usersApi.getUsers();
+const orders = await ordersApi.getAllOrders();
 ```
 
 ### Importação de tipos
 ```typescript
-import { 
-  CreatePackageRequest, 
-  PackageResponse, 
-  CreateUserRequest 
-} from '@/lib/api';
+import { CreateUserRequest } from '@/lib/api';
 ```
 
 ## Vantagens da nova estrutura
@@ -87,12 +82,4 @@ export class OrdersApi extends BaseApiClient {
 
 ## Migração
 
-O código existente não precisa ser alterado, pois mantivemos a compatibilidade através do `apiClient` principal. Gradualmente, você pode migrar para usar as APIs específicas:
-
-```typescript
-// Antes
-const packages = await apiClient.getPackages();
-
-// Depois (recomendado)
-const packages = await packagesApi.getPackages();
-``` 
+O código existente não precisa ser alterado, pois mantivemos a compatibilidade através do `apiClient` principal. Gradualmente, você pode migrar para usar as APIs específicas como `productsApi`, `usersApi` ou `ordersApi`, conforme as necessidades do projeto.

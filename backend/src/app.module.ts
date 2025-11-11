@@ -9,7 +9,6 @@ import { AdminModule } from './admin/admin.module';
 import { getDatabaseConfig } from './config/database.config';
 import jwtConfig from './config/jwt.config';
 import { ProductModule } from './product/product.module';
-import { PackageModule } from './package/package.module';
 import { OrderModule } from './order/order.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -30,7 +29,6 @@ import { join } from 'path';
     AuthModule,
     AdminModule,
     ProductModule,
-    PackageModule,
     OrderModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),

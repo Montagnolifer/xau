@@ -2,7 +2,7 @@
 
 import React from "react"
 
-import { Home, ShoppingBag, MessageCircle, PlayCircle, Package, User, ShoppingCart } from "lucide-react"
+import { Home, ShoppingCart, User } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -31,11 +31,6 @@ export default function BottomNavigation() {
       href: "/",
       icon: Home,
     },
-    /*{
-      name: "Pacotes",
-      href: "/pacotes",
-      icon: Package,
-    },*/
     {
       name: "Carrinho",
       href: "/cart",
