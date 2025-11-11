@@ -18,6 +18,9 @@ import {
   Users,
   ChevronDown,
   Layers,
+  Megaphone,
+  Ticket,
+  LayoutTemplate,
 } from "lucide-react"
 import Link from "next/link"
 import { Suspense } from "react"
@@ -95,9 +98,28 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           { name: "Categorias", href: "/admin/category", icon: Layers },
         ],
       },
+      {
+        name: "Marketing",
+        icon: Megaphone,
+        id: "marketing",
+        isExpandable: true,
+        subItems: [
+          { name: "Cupom", href: "/admin/marketing/cupom", icon: Ticket },
+          { name: "Carrinho", href: "/admin/marketing/carrinho", icon: ShoppingCart },
+        ],
+      },
       { name: "Pedidos", href: "/admin/pedidos", icon: ShoppingCart },
       { name: "Clientes", href: "/admin/clientes", icon: Users },
-      { name: "Configurações", href: "/admin/configuracoes", icon: Settings },
+      {
+        name: "Configurações",
+        icon: Settings,
+        id: "settings",
+        isExpandable: true,
+        subItems: [
+          { name: "Configurações", href: "/admin/configuracoes", icon: Settings },
+          { name: "Layout", href: "/admin/configuracoes/layout", icon: LayoutTemplate },
+        ],
+      },
     ],
     [],
   )
