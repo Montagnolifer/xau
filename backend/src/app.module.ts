@@ -11,6 +11,7 @@ import jwtConfig from './config/jwt.config';
 import { ProductModule } from './product/product.module';
 import { OrderModule } from './order/order.module';
 import { CategoryModule } from './category/category.module';
+import { CartModule } from './cart/cart.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
@@ -32,6 +33,7 @@ import { join } from 'path';
     ProductModule,
     CategoryModule,
     OrderModule,
+    CartModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',

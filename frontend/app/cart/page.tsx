@@ -26,9 +26,10 @@ import { ordersApi, type CreateOrderRequest } from "@/lib/api"
 import { ShippingInfoCard } from "@/components/shipping-info-card"
 
 export default function CartPage() {
-  const { state, removeItem, updateQuantity, clearCart, getItemsRemaining, isMinimumOrderMet, isRetailPromotionMet } = useCart()
+  const { state, isLoading: isCartLoading, isSyncing: isCartSyncing, removeItem, updateQuantity, clearCart, getItemsRemaining, isMinimumOrderMet, isRetailPromotionMet } = useCart()
   const { isAuthenticated, user } = useAuth()
   const [isFinalizing, setIsFinalizing] = useState(false)
+  const isBusy = isFinalizing || isCartSyncing
 
   // Função para determinar o preço correto baseado no tipo de usuário
   const getItemPrice = (product: any) => {
@@ -147,7 +148,7 @@ export default function CartPage() {
       window.open(whatsappUrl, "_blank")
       
       // Limpar carrinho após sucesso
-      clearCart()
+      await clearCart()
       
     } catch (error) {
       console.error('Erro ao criar pedido:', error)
@@ -197,6 +198,17 @@ export default function CartPage() {
       return images[0] as string
     }
     return (images[0] as ProductImage).url || "/placeholder.svg"
+  }
+
+  if (isCartLoading) {
+    return (
+      <div className="min-h-screen bg-brand-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-primary mx-auto" />
+          <p className="text-gray-600">Carregando carrinho...</p>
+        </div>
+      </div>
+    )
   }
 
   if (state.items.length === 0) {
@@ -394,12 +406,15 @@ export default function CartPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeItem(
-                          item.product.id.toString(), 
-                          item.selectedSize, 
-                          item.selectedColor
-                        )}
-                        className="absolute top-1 right-1 text-red-500 hover:text-red-700 z-10"
+                        onClick={() => {
+                          void removeItem(
+                            item.product.id.toString(), 
+                            item.selectedSize, 
+                            item.selectedColor
+                          )
+                        }}
+                        disabled={isCartSyncing}
+                        className="absolute top-1 right-1 text-red-500 hover:text-red-700 z-10 disabled:opacity-70 disabled:cursor-not-allowed"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -456,13 +471,15 @@ export default function CartPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => updateQuantity(
-                              item.product.id.toString(),
-                              item.quantity - 1,
-                              item.selectedSize,
-                              item.selectedColor
-                            )}
-                            disabled={item.quantity <= 1}
+                            onClick={() => {
+                              void updateQuantity(
+                                item.product.id.toString(),
+                                item.quantity - 1,
+                                item.selectedSize,
+                                item.selectedColor
+                              )
+                            }}
+                            disabled={item.quantity <= 1 || isCartSyncing}
                           >
                             <Minus className="h-4 w-4" />
                           </Button>
@@ -471,7 +488,7 @@ export default function CartPage() {
                             value={item.quantity}
                             onChange={(e) => {
                               const value = parseInt(e.target.value) || 0
-                              updateQuantity(
+                              void updateQuantity(
                                 item.product.id.toString(),
                                 value,
                                 item.selectedSize,
@@ -484,12 +501,15 @@ export default function CartPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => updateQuantity(
-                              item.product.id.toString(),
-                              item.quantity + 1,
-                              item.selectedSize,
-                              item.selectedColor
-                            )}
+                            onClick={() => {
+                              void updateQuantity(
+                                item.product.id.toString(),
+                                item.quantity + 1,
+                                item.selectedSize,
+                                item.selectedColor
+                              )
+                            }}
+                            disabled={isCartSyncing}
                           >
                             <Plus className="h-4 w-4" />
                           </Button>
@@ -565,7 +585,7 @@ export default function CartPage() {
                 <div className="space-y-3">
                   <Button
                     onClick={handleFinalizeOrder}
-                    disabled={!minimumOrderMet || isFinalizing}
+                    disabled={!minimumOrderMet || isBusy}
                     className="w-full text-white font-semibold py-3"
                     style={{ backgroundColor: '#60c56f' }}
                   >
@@ -584,8 +604,11 @@ export default function CartPage() {
 
                   <Button
                     variant="outline"
-                    onClick={clearCart}
-                    className="w-full border border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10"
+                    onClick={() => {
+                      void clearCart()
+                    }}
+                    disabled={isCartSyncing}
+                    className="w-full border border-brand-primary/40 text-brand-primary hover:bg-brand-primary/10 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
                     Limpar Carrinho

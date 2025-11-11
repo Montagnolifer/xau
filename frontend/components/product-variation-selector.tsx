@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Plus, ShoppingCart, Crown } from "lucide-react"
 import { useCart } from "@/contexts/cart-context"
 import { useAuth } from "@/contexts/auth-context"
@@ -22,7 +22,7 @@ export default function ProductVariationSelector({ product, trigger }: ProductVa
   const [selectedColor, setSelectedColor] = useState<string>("")
   const [quantity, setQuantity] = useState(1)
   const [isOpen, setIsOpen] = useState(false)
-  const { addItem } = useCart()
+  const { addItem, isSyncing } = useCart()
   const { isAuthenticated, user } = useAuth()
   const { toast } = useToast()
 
@@ -42,7 +42,7 @@ export default function ProductVariationSelector({ product, trigger }: ProductVa
   const displayPrice = getDisplayPrice()
   const isWholesalePrice = user?.isWholesale && product.wholesalePrice
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!isAuthenticated) {
       // Redirecionar para login
       window.location.href = "/auth/login"
@@ -60,26 +60,33 @@ export default function ProductVariationSelector({ product, trigger }: ProductVa
       return
     }
 
-    // Adicionar ao carrinho
-    addItem({
-      product,
-      quantity,
-      selectedSize: selectedSize || undefined,
-      selectedColor: selectedColor || undefined
-    })
+    try {
+      await addItem({
+        product,
+        quantity,
+        selectedSize: selectedSize || undefined,
+        selectedColor: selectedColor || undefined
+      })
 
-    // Mostrar notificação
-    toast({
-      title: "Produto adicionado!",
-      description: `${product.name} foi adicionado ao carrinho`,
-      duration: 3000,
-    })
+      toast({
+        title: "Produto adicionado!",
+        description: `${product.name} foi adicionado ao carrinho`,
+        duration: 3000,
+      })
 
-    // Resetar estado e fechar modal
-    setSelectedSize("")
-    setSelectedColor("")
-    setQuantity(1)
-    setIsOpen(false)
+      setSelectedSize("")
+      setSelectedColor("")
+      setQuantity(1)
+      setIsOpen(false)
+    } catch (error) {
+      console.error("Erro ao adicionar item ao carrinho:", error)
+      toast({
+        title: "Erro ao adicionar",
+        description: "Não foi possível adicionar o produto ao carrinho. Tente novamente.",
+        duration: 3000,
+        variant: "destructive",
+      })
+    }
   }
 
   const handleSizeSelect = (size: string) => {
@@ -112,6 +119,9 @@ export default function ProductVariationSelector({ product, trigger }: ProductVa
             <Crown className="h-5 w-5 text-brand-primary" />
             Adicionar ao Carrinho
           </DialogTitle>
+          <DialogDescription>
+            Selecione variações e quantidade para incluir este produto na sua sacola.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -233,11 +243,11 @@ export default function ProductVariationSelector({ product, trigger }: ProductVa
           {/* Add to Cart Button */}
           <Button
             onClick={handleAddToCart}
-            disabled={!isVariationValid()}
+            disabled={!isVariationValid() || isSyncing}
             className="w-full bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-semibold py-3 hover:brightness-110"
           >
             <ShoppingCart className="h-4 w-4 mr-2" />
-            Adicionar ao Carrinho
+            {isSyncing ? "Adicionando..." : "Adicionar ao Carrinho"}
           </Button>
         </div>
       </DialogContent>
