@@ -1,6 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm'
 import { ProductVariation } from './product-variation.entity'
-import { ProductImage } from './product-image.entity'
 
 @Entity('products')
 export class Product {
@@ -52,6 +51,6 @@ export class Product {
   @OneToMany(() => ProductVariation, (variation) => variation.product, { cascade: true })
   variations: ProductVariation[]
 
-  @OneToMany(() => ProductImage, (image) => image.product, { cascade: true })
-  images: ProductImage[]
+  @Column('jsonb', { default: () => "'[]'" })
+  images: string[]
 } 

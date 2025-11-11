@@ -3,14 +3,14 @@ import { ProductService } from './product.service'
 import { CreateProductDto } from './dto/create-product.dto'
 import { Product } from './entities/product.entity'
 import { FileFieldsInterceptor } from '@nestjs/platform-express'
-import { diskStorage } from 'multer'
+import * as multer from 'multer'
 import { extname } from 'path'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { Request } from 'express'
 
-function fileNameEdit(req, file, callback) {
-  const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
-  callback(null, uniqueSuffix + extname(file.originalname))
+function generateUniqueFilename(originalname: string) {
+  const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`
+  return `${uniqueSuffix}${extname(originalname || '')}`
 }
 
 @Controller('products')
@@ -23,10 +23,13 @@ export class ProductController {
     FileFieldsInterceptor([
       { name: 'images', maxCount: 10 },
     ], {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: fileNameEdit,
-      }),
+      storage: multer.memoryStorage(),
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.startsWith('image/')) {
+          return cb(new BadRequestException('Apenas imagens são permitidas'), false)
+        }
+        cb(null, true)
+      },
     })
   )
   async create(
@@ -47,6 +50,12 @@ export class ProductController {
     }
     
     // Processar variações se for string
+    if (files?.images?.length) {
+      files.images.forEach((file) => {
+        file.filename = generateUniqueFilename(file.originalname)
+      })
+    }
+
     if (createProductDto.variations && typeof createProductDto.variations === 'string') {
       try {
         createProductDto.variations = JSON.parse(createProductDto.variations);
@@ -130,10 +139,13 @@ export class ProductController {
     FileFieldsInterceptor([
       { name: 'images', maxCount: 10 },
     ], {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: fileNameEdit,
-      }),
+      storage: multer.memoryStorage(),
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.startsWith('image/')) {
+          return cb(new BadRequestException('Apenas imagens são permitidas'), false)
+        }
+        cb(null, true)
+      },
     })
   )
   async update(
@@ -151,6 +163,12 @@ export class ProductController {
     }
     
     // Processar variações se for string
+    if (files?.images?.length) {
+      files.images.forEach((file) => {
+        file.filename = generateUniqueFilename(file.originalname)
+      })
+    }
+
     if (updateProductDto.variations && typeof updateProductDto.variations === 'string') {
       try {
         updateProductDto.variations = JSON.parse(updateProductDto.variations);

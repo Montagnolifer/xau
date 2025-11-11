@@ -42,10 +42,34 @@ interface Product {
   category: string
   stock: number
   status: "active" | "inactive"
-  image: string
+  image?: string
   sales: number
   trend: "up" | "down" | "stable"
   isFavorite: boolean
+}
+
+const resolveProductImage = (product: any): string | undefined => {
+  const images = product?.images
+
+  if (!images || (Array.isArray(images) && images.length === 0)) {
+    return undefined
+  }
+
+  // Novo formato: array de URLs (string)
+  if (Array.isArray(images) && typeof images[0] === "string") {
+    const url = images[0] as string
+    return url.startsWith("http") ? url : `${config.api.baseUrl}${url}`
+  }
+
+  // Formato antigo: array de objetos com url/isMain
+  if (Array.isArray(images) && typeof images[0] === "object") {
+    const mainImage = images.find((img: any) => img?.isMain) ?? images[0]
+    if (mainImage?.url) {
+      return mainImage.url.startsWith("http") ? mainImage.url : `${config.api.baseUrl}${mainImage.url}`
+    }
+  }
+
+  return undefined
 }
 
 export default function ProductsPage() {
@@ -72,10 +96,7 @@ export default function ProductsPage() {
           category: p.category,
           stock: p.stock,
           status: p.status ? "active" : "inactive",
-          image: (() => {
-            const main = p.images?.find((img: any) => img.isMain);
-            return main ? main.url : (p.images && p.images.length > 0 ? p.images[0].url : "/placeholder.svg?height=80&width=80");
-          })(),
+          image: resolveProductImage(p),
           sales: p.sales || 0,
           trend: "stable", // ou lógica para trend se houver
           isFavorite: p.isFavorite || false,
@@ -323,7 +344,7 @@ export default function ProductsPage() {
                   {/* Product Image */}
                   <div className="flex-shrink-0">
                     <img
-                      src={product.image ? `${config.api.baseUrl}${product.image}` : "/placeholder.svg"}
+                      src={product.image ?? "/placeholder.svg"}
                       alt={product.name}
                       className="w-20 h-20 object-cover rounded-xl border border-slate-200"
                     />

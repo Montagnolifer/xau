@@ -102,6 +102,11 @@ export class CreateProductDto {
   @IsString()
   youtubeUrl?: string
 
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  images?: string[]
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateProductVariationDto)

@@ -19,6 +19,55 @@ import { config } from "@/lib/config"
 
 type ImageType = { id: string; file: File; preview: string; isMain?: boolean }
 
+const normalizeProductImages = (images: any): string[] => {
+  if (!images) {
+    return []
+  }
+
+  if (!Array.isArray(images)) {
+    return []
+  }
+
+  const mapped = images
+    .map((image: any, index: number) => {
+      if (typeof image === "string") {
+        return { url: image, isMain: index === 0, position: index }
+      }
+
+      if (image && typeof image === "object" && typeof image.url === "string") {
+        const isMain = Boolean((image as { isMain?: boolean }).isMain)
+        const position =
+          typeof (image as { position?: number }).position === "number"
+            ? (image as { position?: number }).position!
+            : index
+
+        return {
+          url: image.url as string,
+          isMain,
+          position,
+        }
+      }
+
+      return null
+    })
+    .filter((item): item is { url: string; isMain: boolean; position: number } => item !== null)
+
+  if (mapped.some((item) => item.isMain)) {
+    mapped.sort((a, b) => Number(b.isMain) - Number(a.isMain))
+  } else if (mapped.some((item) => typeof item.position === "number")) {
+    mapped.sort((a, b) => a.position - b.position)
+  }
+
+  const unique: string[] = []
+  for (const item of mapped) {
+    if (!unique.includes(item.url)) {
+      unique.push(item.url)
+    }
+  }
+
+  return unique
+}
+
 function ImageUploader({ 
   images, 
   setImages, 
@@ -27,8 +76,8 @@ function ImageUploader({
 }: {
   images: ImageType[];
   setImages: React.Dispatch<React.SetStateAction<ImageType[]>>;
-  existingImages?: Array<{ id: number; url: string; isMain: boolean }>;
-  setExistingImages?: React.Dispatch<React.SetStateAction<Array<{ id: number; url: string; isMain: boolean }>>>;
+  existingImages?: string[];
+  setExistingImages?: React.Dispatch<React.SetStateAction<string[]>>;
 }) {
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -49,7 +98,13 @@ function ImageUploader({
       isMain: false,
     }))
 
-    setImages((prev: ImageType[]) => [...prev, ...newImages])
+    setImages((prev: ImageType[]) => {
+      const combined = [...prev, ...newImages]
+      return combined.map((img, index) => ({
+        ...img,
+        isMain: index === 0,
+      }))
+    })
   }
 
   const removeImage = (id: string) => {
@@ -58,7 +113,11 @@ function ImageUploader({
       if (imageToRemove) {
         URL.revokeObjectURL(imageToRemove.preview)
       }
-      return prev.filter((img: ImageType) => img.id !== id)
+      const filtered = prev.filter((img: ImageType) => img.id !== id)
+      return filtered.map((img, index) => ({
+        ...img,
+        isMain: index === 0,
+      }))
     })
   }
 
@@ -82,24 +141,29 @@ function ImageUploader({
     fileInputRef.current?.click()
   }
 
-  const setMainImage = (imageId: number) => {
-    if (setExistingImages) {
-      setExistingImages(prev => 
-        prev.map(img => ({
-          ...img,
-          isMain: img.id === imageId
-        }))
-      )
-    }
+  const setMainExistingImage = (index: number) => {
+    if (!setExistingImages) return
+
+    setExistingImages((prev) => {
+      if (index < 0 || index >= prev.length) {
+        return prev
+      }
+      const selected = prev[index]
+      const others = prev.filter((_, i) => i !== index)
+      return [selected, ...others]
+    })
   }
 
   const setMainNewImage = (imageId: string) => {
-    setImages(prev => 
-      prev.map((img, index) => ({
-        ...img,
-        isMain: img.id === imageId
-      }))
-    )
+    setImages((prev) => {
+      const target = prev.find((img) => img.id === imageId)
+      if (!target) {
+        return prev
+      }
+      const others = prev.filter((img) => img.id !== imageId)
+      const reordered = [{ ...target, isMain: true }, ...others.map((img) => ({ ...img, isMain: false }))]
+      return reordered
+    })
   }
 
   return (
@@ -142,22 +206,25 @@ function ImageUploader({
         <div className="mb-4">
           <h4 className="text-sm font-medium text-slate-700 mb-3">Imagens Existentes</h4>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {existingImages.map((image, index) => (
-              <div key={image.id} className="relative group">
+            {existingImages.map((image, index) => {
+              const imageSrc = image.startsWith("http") ? image : `${config.api.baseUrl}${image}`
+
+              return (
+                <div key={`${image}-${index}`} className="relative group">
                 <div className="aspect-square bg-slate-100 rounded-lg border border-slate-200 overflow-hidden">
                   <img
-                    src={`${config.api.baseUrl}${image.url}`}
+                      src={imageSrc}
                     alt={`Imagem existente ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center space-x-2">
-                  {!image.isMain && (
+                    {index > 0 && (
                     <Button
                       type="button"
                       variant="secondary"
                       size="sm"
-                      onClick={() => setMainImage(image.id)}
+                        onClick={() => setMainExistingImage(index)}
                       className="bg-blue-500 hover:bg-blue-600 text-white"
                     >
                       Principal
@@ -169,7 +236,7 @@ function ImageUploader({
                     size="sm"
                     onClick={() => {
                       if (setExistingImages) {
-                        setExistingImages(prev => prev.filter(img => img.id !== image.id))
+                          setExistingImages(prev => prev.filter((_, i) => i !== index))
                       }
                     }}
                     className="bg-red-500 hover:bg-red-600"
@@ -178,10 +245,11 @@ function ImageUploader({
                   </Button>
                 </div>
                 <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                  {image.isMain ? "Principal" : `${index + 1}`}
+                    {index === 0 ? "Principal" : `${index + 1}`}
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}
@@ -201,7 +269,7 @@ function ImageUploader({
                   />
                 </div>
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center space-x-2">
-                  {!image.isMain && (
+                  {index > 0 && (
                     <Button
                       type="button"
                       variant="secondary"
@@ -223,7 +291,7 @@ function ImageUploader({
                   </Button>
                 </div>
                 <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                  {image.isMain ? "Principal" : `${index + 1}`}
+                  {index === 0 ? "Principal" : `${index + 1}`}
                 </div>
               </div>
             ))}
@@ -265,7 +333,7 @@ export default function NewProductPage() {
     youtubeUrl: "",
   })
   const [images, setImages] = useState<Array<{ id: string; file: File; preview: string; isMain?: boolean }>>([])
-  const [existingImages, setExistingImages] = useState<Array<{ id: number; url: string; isMain: boolean }>>([])
+  const [existingImages, setExistingImages] = useState<string[]>([])
   const [variations, setVariations] = useState<
     Array<{
       name: string
@@ -305,13 +373,7 @@ export default function NewProductPage() {
           }
           
           // Carregar imagens existentes
-          if (product.images) {
-            setExistingImages(product.images.map((img: any) => ({
-              id: img.id,
-              url: img.url,
-              isMain: img.isMain
-            })))
-          }
+          setExistingImages(normalizeProductImages(product.images))
         })
         .catch((err) => {
           console.error('Erro ao carregar produto:', err)
@@ -433,15 +495,6 @@ export default function NewProductPage() {
     // Enviar informações sobre imagens existentes que devem ser mantidas
     if (isEditing) {
       data.append("existingImages", JSON.stringify(existingImages))
-    }
-    
-    // Enviar informações sobre quais novas imagens são principais
-    if (images.length > 0) {
-      const imagesWithMainInfo = images.map((img, index) => ({
-        id: img.id,
-        isMain: img.isMain || false
-      }))
-      data.append("newImagesInfo", JSON.stringify(imagesWithMainInfo))
     }
     
     images.forEach((img) => {
