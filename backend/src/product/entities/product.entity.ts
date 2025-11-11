@@ -1,5 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+  RelationId,
+} from 'typeorm'
 import { ProductVariation } from './product-variation.entity'
+import { Category } from '../../category/entities/category.entity'
 
 @Entity('products')
 export class Product {
@@ -24,8 +33,15 @@ export class Product {
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
   wholesalePriceUSD: number
 
-  @Column()
-  category: string
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  category: string | null
+
+  @ManyToOne(() => Category, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'category_id' })
+  categoryEntity?: Category | null
+
+  @RelationId((product: Product) => product.categoryEntity)
+  categoryId?: number | null
 
   @Column('int')
   stock: number

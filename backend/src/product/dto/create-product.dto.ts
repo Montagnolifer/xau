@@ -62,6 +62,15 @@ export class CreateProductDto {
   @IsNotEmpty()
   category: string
 
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') return undefined
+    const num = Number(value)
+    return isNaN(num) ? undefined : num
+  })
+  categoryId?: number
+
   @IsNumber()
   @Min(0)
   @Transform(({ value }) => {

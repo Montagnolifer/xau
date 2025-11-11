@@ -24,6 +24,7 @@ export interface Product {
   reference?: string // SKU do backend
   sku?: string
   category?: string
+  categoryId?: number
   images: string[] | ProductImage[]
   sizes?: string[]
   colors?: Color[]

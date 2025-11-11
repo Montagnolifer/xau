@@ -45,8 +45,17 @@ export class ProductController {
       throw new BadRequestException('Nome do produto é obrigatório');
     }
     
-    if (!createProductDto.category) {
+    const rawCategoryId = createProductDto.categoryId ?? createProductDto.category_id;
+    if (rawCategoryId === undefined || rawCategoryId === null || rawCategoryId === '') {
       throw new BadRequestException('Categoria é obrigatória');
+    }
+    const parsedCategoryId = Number(rawCategoryId);
+    if (Number.isNaN(parsedCategoryId) || parsedCategoryId <= 0) {
+      throw new BadRequestException('Categoria selecionada é inválida');
+    }
+    createProductDto.categoryId = parsedCategoryId;
+    if (typeof createProductDto.category === 'string') {
+      createProductDto.category = createProductDto.category.trim();
     }
     
     // Processar variações se for string
@@ -158,8 +167,17 @@ export class ProductController {
       throw new BadRequestException('Nome do produto é obrigatório');
     }
     
-    if (!updateProductDto.category) {
+    const rawCategoryId = updateProductDto.categoryId ?? updateProductDto.category_id;
+    if (rawCategoryId === undefined || rawCategoryId === null || rawCategoryId === '') {
       throw new BadRequestException('Categoria é obrigatória');
+    }
+    const parsedCategoryId = Number(rawCategoryId);
+    if (Number.isNaN(parsedCategoryId) || parsedCategoryId <= 0) {
+      throw new BadRequestException('Categoria selecionada é inválida');
+    }
+    updateProductDto.categoryId = parsedCategoryId;
+    if (typeof updateProductDto.category === 'string') {
+      updateProductDto.category = updateProductDto.category.trim();
     }
     
     // Processar variações se for string

@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch"
 import { ArrowLeft, Upload, Save, Eye, Plus, Trash2, X } from "lucide-react"
 import Link from "next/link"
 import { apiClient } from "@/lib/api"
+import type { CategoryFlatNode } from "@/types/category"
 import { config } from "@/lib/config"
 
 type ImageType = { id: string; file: File; preview: string; isMain?: boolean }
@@ -324,7 +325,7 @@ export default function NewProductPage() {
     wholesalePrice: "",
     priceUSD: "",
     wholesalePriceUSD: "",
-    category: "",
+    categoryId: "",
     stock: "",
     status: true,
     sku: "",
@@ -340,6 +341,43 @@ export default function NewProductPage() {
       options: string[]
     }>
   >([])
+  const formatCategoryLabel = (category: CategoryFlatNode) => {
+    if (category.path && Array.isArray(category.path) && category.path.length > 0) {
+      return category.path.join(" > ")
+    }
+    return category.name
+  }
+
+  const [availableCategories, setAvailableCategories] = useState<CategoryFlatNode[]>([])
+  const [loadingCategories, setLoadingCategories] = useState(false)
+  const [categoriesError, setCategoriesError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+    setLoadingCategories(true)
+    setCategoriesError(null)
+
+    apiClient
+      .getCategoriesFlat()
+      .then((data) => {
+        if (!isMounted) return
+        const activeCategories = (data || []).filter((category) => category.status !== false)
+        setAvailableCategories(activeCategories)
+      })
+      .catch((error) => {
+        if (!isMounted) return
+        console.error("Erro ao carregar categorias:", error)
+        setCategoriesError("Não foi possível carregar as categorias cadastradas.")
+      })
+      .finally(() => {
+        if (!isMounted) return
+        setLoadingCategories(false)
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   // Carregar dados do produto se for edição
   useEffect(() => {
@@ -356,7 +394,13 @@ export default function NewProductPage() {
             wholesalePrice: product.wholesalePrice?.toString() || "",
             priceUSD: product.priceUSD?.toString() || "",
             wholesalePriceUSD: product.wholesalePriceUSD?.toString() || "",
-            category: product.category || "",
+            categoryId: (() => {
+              const idFromResponse =
+                typeof product.categoryId === "number"
+                  ? product.categoryId
+                  : product.categoryEntity?.id
+              return idFromResponse ? idFromResponse.toString() : ""
+            })(),
             stock: product.stock?.toString() || "",
             status: product.status ?? true,
             sku: product.sku || "",
@@ -390,6 +434,13 @@ export default function NewProductPage() {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
+    }))
+  }
+
+  const handleCategoryChange = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      categoryId: value,
     }))
   }
 
@@ -436,7 +487,7 @@ export default function NewProductPage() {
       return;
     }
     
-    if (!formData.category) {
+    if (!formData.categoryId) {
       alert("Categoria é obrigatória");
       setIsLoading(false);
       return;
@@ -476,6 +527,20 @@ export default function NewProductPage() {
       return;
     }
     
+    const selectedCategory = availableCategories.find(
+      (category) => category.id === Number(formData.categoryId)
+    );
+
+    if (!selectedCategory) {
+      alert("Categoria selecionada é inválida");
+      setIsLoading(false);
+      return;
+    }
+
+    const categoryLabel = selectedCategory.path?.length
+      ? selectedCategory.path.join(" > ")
+      : selectedCategory.name;
+
     // Adicionar dados validados
     data.append("name", formData.name.trim());
     data.append("description", formData.description || "");
@@ -483,7 +548,8 @@ export default function NewProductPage() {
     data.append("wholesalePrice", formData.wholesalePrice || "");
     data.append("priceUSD", priceUSD?.toString() || "");
     data.append("wholesalePriceUSD", wholesalePriceUSD?.toString() || "");
-    data.append("category", formData.category);
+    data.append("categoryId", selectedCategory.id.toString());
+    data.append("category", categoryLabel);
     data.append("stock", stock.toString());
     data.append("status", formData.status.toString());
     data.append("sku", formData.sku || "");
@@ -515,13 +581,6 @@ export default function NewProductPage() {
       setIsLoading(false)
     }
   }
-
-  const categories = [
-    "Sandálias",
-    "Rasteirinhas",
-    "Infantil",
-    "Kit",
-  ]
 
   const getYouTubeVideoId = (url: string) => {
     const regex = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/
@@ -603,18 +662,37 @@ export default function NewProductPage() {
                     <Label htmlFor="category" className="text-slate-700 font-medium">
                       Categoria *
                     </Label>
-                    <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
-                      <SelectTrigger className="mt-2 border-slate-300 focus:border-indigo-500 focus:ring-indigo-500">
-                        <SelectValue placeholder="Selecione uma categoria" />
+                    <Select value={formData.categoryId} onValueChange={handleCategoryChange}>
+                      <SelectTrigger
+                        className="mt-2 border-slate-300 focus:border-indigo-500 focus:ring-indigo-500"
+                        disabled={loadingCategories || availableCategories.length === 0}
+                      >
+                        <SelectValue
+                          placeholder={
+                            loadingCategories
+                              ? "Carregando categorias..."
+                              : availableCategories.length === 0
+                                ? "Nenhuma categoria disponível"
+                                : "Selecione uma categoria"
+                          }
+                        />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
+                        {availableCategories.map((category) => (
+                          <SelectItem key={category.id} value={category.id.toString()}>
+                            {formatCategoryLabel(category)}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                    {categoriesError && (
+                      <p className="text-xs text-red-500 mt-2">{categoriesError}</p>
+                    )}
+                    {!loadingCategories && !categoriesError && availableCategories.length === 0 && (
+                      <p className="text-xs text-slate-500 mt-2">
+                        Nenhuma categoria cadastrada. Cadastre uma categoria antes de continuar.
+                      </p>
+                    )}
                   </div>
                 </div>
 

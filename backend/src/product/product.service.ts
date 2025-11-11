@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { Product } from './entities/product.entity'
@@ -6,6 +6,7 @@ import { CreateProductDto } from './dto/create-product.dto'
 import { ProductVariation } from './entities/product-variation.entity'
 import { UploadsService } from '../uploads/uploads.service'
 import { extname } from 'path'
+import { Category } from '../category/entities/category.entity'
 
 const PRODUCT_UPLOAD_OPTIONS = {
   resize: { width: 800, height: 800 },
@@ -23,6 +24,8 @@ export class ProductService {
     @InjectRepository(ProductVariation)
     private readonly variationRepository: Repository<ProductVariation>,
     private readonly uploadsService: UploadsService,
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
   ) {}
 
   private ensureFilename(file: Express.Multer.File): Express.Multer.File {
@@ -126,8 +129,21 @@ export class ProductService {
   }
 
   async create(createProductDto: CreateProductDto, images?: Array<Express.Multer.File>): Promise<Product> {
-    const { variations, images: dtoImages, ...productData } = createProductDto
+    const { variations, images: dtoImages, categoryId, ...productData } = createProductDto
     const product = this.productRepository.create(productData)
+
+    if (categoryId !== undefined) {
+      const category = await this.categoryRepository.findOne({ where: { id: categoryId } })
+      if (!category) {
+        throw new NotFoundException('Categoria não encontrada')
+      }
+      product.categoryEntity = category
+      const providedCategoryName =
+        typeof productData.category === 'string' && productData.category.trim().length > 0
+          ? productData.category.trim()
+          : undefined
+      product.category = providedCategoryName ?? category.name
+    }
 
     if (variations && variations.length > 0) {
       product.variations = variations.map((variation) =>
@@ -140,12 +156,13 @@ export class ProductService {
 
     product.images = Array.from(new Set([...existingImages, ...uploadedImages]))
 
-    return this.productRepository.save(product)
+    const savedProduct = await this.productRepository.save(product)
+    return this.findOne(savedProduct.id)
   }
 
   async findAll(): Promise<Product[]> {
     return this.productRepository.find({
-      relations: ['variations'],
+      relations: ['variations', 'categoryEntity'],
       order: { id: 'DESC' },
     })
   }
@@ -153,7 +170,7 @@ export class ProductService {
   async findOne(id: number): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: ['variations'],
+      relations: ['variations', 'categoryEntity'],
     })
 
     if (!product) {
@@ -166,7 +183,7 @@ export class ProductService {
   async update(id: number, updateProductDto: any, images?: Array<Express.Multer.File>): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: ['variations'],
+      relations: ['variations', 'categoryEntity'],
     })
 
     if (!product) {
@@ -180,7 +197,6 @@ export class ProductService {
       wholesalePrice: updateProductDto.wholesalePrice,
       priceUSD: updateProductDto.priceUSD,
       wholesalePriceUSD: updateProductDto.wholesalePriceUSD,
-      category: updateProductDto.category,
       stock: updateProductDto.stock,
       status: updateProductDto.status,
       sku: updateProductDto.sku,
@@ -188,6 +204,34 @@ export class ProductService {
       dimensions: updateProductDto.dimensions,
       youtubeUrl: updateProductDto.youtubeUrl,
     })
+
+    if (updateProductDto.categoryId !== undefined) {
+      if (
+        updateProductDto.categoryId === null ||
+        updateProductDto.categoryId === '' ||
+        Number.isNaN(Number(updateProductDto.categoryId))
+      ) {
+        product.categoryEntity = null
+        product.category = null
+      } else {
+        const categoryId = Number(updateProductDto.categoryId)
+        const category = await this.categoryRepository.findOne({ where: { id: categoryId } })
+        if (!category) {
+          throw new NotFoundException('Categoria não encontrada')
+        }
+        product.categoryEntity = category
+        const providedCategoryName =
+          typeof updateProductDto.category === 'string' && updateProductDto.category.trim().length > 0
+            ? updateProductDto.category.trim()
+            : undefined
+        product.category = providedCategoryName ?? category.name
+      }
+    } else if (updateProductDto.category !== undefined) {
+      product.category =
+        typeof updateProductDto.category === 'string' && updateProductDto.category.trim().length > 0
+          ? updateProductDto.category.trim()
+          : null
+    }
 
     if (updateProductDto.variations) {
       if (product.variations) {
@@ -220,13 +264,14 @@ export class ProductService {
       product.images = Array.from(new Set([...(product.images || []), ...uploadedImages]))
     }
 
-    return this.productRepository.save(product)
+    const savedProduct = await this.productRepository.save(product)
+    return this.findOne(savedProduct.id)
   }
 
   async remove(id: number): Promise<{ message: string }> {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: ['variations'],
+      relations: ['variations', 'categoryEntity'],
     })
 
     if (!product) {
@@ -257,7 +302,7 @@ export class ProductService {
   async getFavorites(): Promise<Product[]> {
     return this.productRepository.find({
       where: { isFavorite: true },
-      relations: ['variations'],
+      relations: ['variations', 'categoryEntity'],
       order: { id: 'DESC' },
     })
   }
