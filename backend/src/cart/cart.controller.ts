@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Request, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Put, Request, UseGuards } from '@nestjs/common'
 import { CartService } from './cart.service'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { SetCartDto } from './dto/set-cart.dto'
@@ -10,6 +10,15 @@ import { CartResponseDto } from './dto/cart-response.dto'
 @UseGuards(JwtAuthGuard)
 export class CartController {
   constructor(private readonly cartService: CartService) {}
+
+  @Get()
+  async getAllCarts(@Request() req: any): Promise<CartResponseDto[]> {
+    if (req.user?.role !== 'admin') {
+      throw new ForbiddenException('Acesso permitido somente para administradores')
+    }
+
+    return this.cartService.getAllCarts()
+  }
 
   @Get('me')
   async getMyCart(@Request() req: any): Promise<CartResponseDto> {

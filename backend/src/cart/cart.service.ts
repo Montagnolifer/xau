@@ -26,6 +26,17 @@ export class CartService {
     return new CartResponseDto(syncedCart)
   }
 
+  async getAllCarts(): Promise<CartResponseDto[]> {
+    const carts = await this.cartRepository.find({ relations: ['items', 'user'] })
+    const syncedCarts = await Promise.all(
+      carts.map(async cart => {
+        const syncedCart = await this.syncTotals(cart.id)
+        return new CartResponseDto(syncedCart)
+      }),
+    )
+    return syncedCarts
+  }
+
   async setCart(userId: string, setCartDto: SetCartDto): Promise<CartResponseDto> {
     const cart = await this.getOrCreateCart(userId)
 
@@ -180,11 +191,14 @@ export class CartService {
       return this.loadCart(savedCart.id)
     }
 
-    return cart
+    return this.loadCart(cart.id)
   }
 
   private async loadCart(cartId: string): Promise<Cart> {
-    const cart = await this.cartRepository.findOne({ where: { id: cartId } })
+    const cart = await this.cartRepository.findOne({
+      where: { id: cartId },
+      relations: ['items', 'user'],
+    })
 
     if (!cart) {
       throw new NotFoundException('Carrinho não encontrado')

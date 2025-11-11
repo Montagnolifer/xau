@@ -109,6 +109,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         ],
       },
       { name: "Pedidos", href: "/admin/pedidos", icon: ShoppingCart },
+      { name: "Carrinhos", href: "/admin/carts", icon: ShoppingCart },
       { name: "Clientes", href: "/admin/clientes", icon: Users },
       {
         name: "Configurações",

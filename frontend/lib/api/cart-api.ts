@@ -30,6 +30,14 @@ export interface CartItemResponse {
   updatedAt: string
 }
 
+export interface CartUserResponse {
+  id: string
+  name?: string
+  whatsapp?: string
+  email?: string
+  isWholesale?: boolean
+}
+
 export interface CartResponse {
   id: string
   userId: string
@@ -39,6 +47,7 @@ export interface CartResponse {
   metadata?: Record<string, any>
   createdAt: string
   updatedAt: string
+  user?: CartUserResponse
 }
 
 class CartApiClient extends BaseApiClient {
@@ -48,6 +57,12 @@ class CartApiClient extends BaseApiClient {
 
   async getMyCart(): Promise<CartResponse> {
     return this.authenticatedRequest<CartResponse>('/cart/me', {
+      method: 'GET',
+    })
+  }
+
+  async getAllCarts(): Promise<CartResponse[]> {
+    return this.authenticatedRequest<CartResponse[]>('/cart', {
       method: 'GET',
     })
   }

@@ -1,5 +1,6 @@
 import { Cart } from '../entities/cart.entity'
 import { CartItem } from '../entities/cart-item.entity'
+import { User } from '../../user/entities/user.entity'
 
 export class CartItemResponseDto {
   id: string
@@ -33,6 +34,20 @@ export class CartItemResponseDto {
   }
 }
 
+export class CartUserResponseDto {
+  id: string
+  name?: string
+  whatsapp?: string
+  isWholesale?: boolean
+
+  constructor(user: User) {
+    this.id = user.id
+    this.name = user.name ?? undefined
+    this.whatsapp = user.whatsapp ?? undefined
+    this.isWholesale = user.isWholesale ?? undefined
+  }
+}
+
 export class CartResponseDto {
   id: string
   userId: string
@@ -42,6 +57,7 @@ export class CartResponseDto {
   metadata?: Record<string, any>
   createdAt: Date
   updatedAt: Date
+  user?: CartUserResponseDto
 
   constructor(cart: Cart) {
     this.id = cart.id
@@ -52,6 +68,7 @@ export class CartResponseDto {
     this.metadata = cart.metadata ?? undefined
     this.createdAt = cart.createdAt
     this.updatedAt = cart.updatedAt
+    this.user = cart.user ? new CartUserResponseDto(cart.user) : undefined
   }
 }
 
