@@ -1,7 +1,30 @@
 import 'reflect-metadata';
+import { config as loadEnv } from 'dotenv';
+import { existsSync } from 'fs';
+import { resolve } from 'path';
 import * as bcrypt from 'bcrypt';
 import { DataSource } from 'typeorm';
 import { Admin } from '../src/admin/entities/admin.entity';
+
+function loadEnvironment() {
+  const customPath = process.env.ENV_PATH
+    ? resolve(process.cwd(), process.env.ENV_PATH)
+    : undefined;
+
+  const defaultPath = resolve(__dirname, '../.env');
+
+  const envPath = customPath && existsSync(customPath) ? customPath : defaultPath;
+
+  loadEnv({ path: envPath });
+
+  if (!existsSync(envPath)) {
+    console.warn(
+      `Arquivo .env não encontrado em ${envPath}. Variáveis de ambiente padrões serão usadas.`,
+    );
+  }
+}
+
+loadEnvironment();
 
 const ADMIN_NAME = process.env.ADMIN_NAME ?? 'Fernando';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'xaucenter@gmail.com';
