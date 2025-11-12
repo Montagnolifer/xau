@@ -15,7 +15,7 @@ DB_PASSWORD=sua_senha
 DB_DATABASE=catalogoemma
 
 # Server Configuration
-PORT=3001
+PORT=3101
 NODE_ENV=development
 ```
 

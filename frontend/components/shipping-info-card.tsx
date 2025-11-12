@@ -166,7 +166,7 @@ export function ShippingInfoCard() {
     try {
       setIsSaving(true)
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005'}/users/${user.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3105'}/users/${user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -61,7 +61,7 @@ Os seguintes scripts já estão configurados para executar automaticamente:
 
 - `npm run build` - Executa `copy-uploads` após o build
 - `npm run start:dev` - Copia imagens automaticamente após upload
-- `npm run start:dev:3005` - Copia imagens automaticamente após upload na porta 3005
+- `npm run start:dev:3105` - Copia imagens automaticamente após upload na porta 3105
 - `npm run start:dev:watch` - Inicia servidor com monitoramento automático
 
 ## 🔧 Como Funciona

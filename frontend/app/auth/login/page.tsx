@@ -100,7 +100,7 @@ export default function LoginPage() {
         whatsapp: cleanWhatsAppValue
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005'}/auth/login`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3105'}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

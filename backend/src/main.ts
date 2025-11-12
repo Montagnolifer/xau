@@ -15,7 +15,7 @@ async function bootstrap() {
   
   // Configurar CORS
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    origin: ['http://localhost:3000', 'http://localhost:3101'],
     credentials: true,
   });
 
@@ -29,7 +29,7 @@ async function bootstrap() {
   // Configurar interceptor de exceções
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  const port = process.env.PORT || 3005;
+  const port = process.env.PORT || 3105;
   await app.listen(port);
   console.log(`🚀 Backend rodando na porta ${port}`);
 }

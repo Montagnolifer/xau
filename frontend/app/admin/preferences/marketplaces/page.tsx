@@ -1,50 +1,63 @@
 "use client"
 
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   LucideIcon,
+  Loader2,
   Plus,
   ShoppingBag,
   Store,
 } from "lucide-react"
+import {
+  marketplacesApi,
+  type MarketplaceAccount,
+} from "@/lib/api/marketplaces-api"
 
 type MarketplaceStatus = "connected" | "pending" | "disconnected"
 
-type Marketplace = {
+type MarketplaceDefinition = {
   id: string
+  provider?: "mercado_livre"
   name: string
   description: string
-  status: MarketplaceStatus
-  lastSync?: string
   category: string
   icon: LucideIcon
   brandColor: string
-  productsCount?: number
+  defaultStatus: MarketplaceStatus
 }
 
-const marketplaces: Marketplace[] = [
+type MarketplaceCardData = MarketplaceDefinition & {
+  status: MarketplaceStatus
+  lastSync?: string
+  productsCount?: number
+  accounts: MarketplaceAccount[]
+}
+
+const marketplaceDefinitions: MarketplaceDefinition[] = [
   {
     id: "mercado-livre",
+    provider: "mercado_livre",
     name: "Mercado Livre",
-    description: "Venda com a maior vitrine da América Latina e sincronize pedidos em tempo real.",
-    status: "connected",
-    lastSync: "Sincronizado há 18 minutos",
+    description:
+      "Venda com a maior vitrine da América Latina e sincronize pedidos em tempo real.",
     category: "Marketplace",
     icon: Store,
     brandColor: "from-yellow-400 to-amber-500",
-    productsCount: 126,
+    defaultStatus: "pending",
   },
   {
     id: "shopee",
     name: "Shopee",
-    description: "Centralize pedidos, estoque e catálogo da sua operação na Shopee.",
-    status: "pending",
+    description:
+      "Centralize pedidos, estoque e catálogo da sua operação na Shopee.",
     category: "Marketplace",
     icon: ShoppingBag,
     brandColor: "from-orange-500 to-red-500",
+    defaultStatus: "pending",
   },
 ]
 
@@ -69,12 +82,135 @@ const statusConfig: Record<
   },
 }
 
+const dateTimeFormatter = new Intl.DateTimeFormat("pt-BR", {
+  dateStyle: "short",
+  timeStyle: "short",
+})
+
+function formatDateTime(value?: string | null) {
+  if (!value) {
+    return null
+  }
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) {
+    return null
+  }
+  return dateTimeFormatter.format(parsed)
+}
+
+function getNextExpirationLabel(accounts: MarketplaceAccount[]): string {
+  const expirations = accounts
+    .map((account) =>
+      account.tokenExpiresAt ? new Date(account.tokenExpiresAt) : null,
+    )
+    .filter((value): value is Date => Boolean(value))
+    .sort((a, b) => a.getTime() - b.getTime())
+
+  if (!expirations.length) {
+    return "Automática"
+  }
+
+  const label = formatDateTime(expirations[0].toISOString())
+  return label ? `Até ${label}` : "Automática"
+}
+
 export default function MarketplacesPage() {
   const router = useRouter()
+  const [accounts, setAccounts] = useState<MarketplaceAccount[]>([])
+  const [loadingAccounts, setLoadingAccounts] = useState(true)
+  const [connectingProvider, setConnectingProvider] = useState<string | null>(
+    null,
+  )
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const connectedCount = marketplaces.filter(
-    (marketplace) => marketplace.status === "connected",
-  ).length
+  const fetchAccounts = useCallback(async () => {
+    try {
+      setLoadingAccounts(true)
+      setErrorMessage(null)
+      const response = await marketplacesApi.listAccounts()
+      setAccounts(response)
+    } catch (error) {
+      console.error("Erro ao carregar contas de marketplace:", error)
+      setErrorMessage(
+        "Não foi possível carregar as contas conectadas. Tente novamente.",
+      )
+    } finally {
+      setLoadingAccounts(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchAccounts()
+  }, [fetchAccounts])
+
+  const handleMercadoLivreConnection = useCallback(async () => {
+    try {
+      setConnectingProvider("mercado_livre")
+      setErrorMessage(null)
+      const { authorizationUrl } = await marketplacesApi.authorizeMercadoLivre()
+      window.location.href = authorizationUrl
+    } catch (error) {
+      console.error("Erro ao iniciar conexão Mercado Livre:", error)
+      setErrorMessage(
+        "Não foi possível iniciar a autenticação com o Mercado Livre.",
+      )
+      setConnectingProvider(null)
+    }
+  }, [])
+
+  const resolvedMarketplaces = useMemo<MarketplaceCardData[]>(() => {
+    return marketplaceDefinitions.map((definition) => {
+      const providerAccounts = definition.provider
+        ? accounts.filter((account) => account.provider === definition.provider)
+        : []
+
+      const status: MarketplaceStatus =
+        definition.provider && providerAccounts.length > 0
+          ? "connected"
+          : definition.defaultStatus
+
+      const lastUpdated =
+        providerAccounts.length > 0
+          ? formatDateTime(providerAccounts[0]?.updatedAt) ?? undefined
+          : undefined
+
+      return {
+        ...definition,
+        status,
+        lastSync: lastUpdated
+          ? `Atualizado em ${lastUpdated}`
+          : undefined,
+        accounts: providerAccounts,
+        productsCount:
+          definition.provider === "mercado_livre" ? undefined : undefined,
+      }
+    })
+  }, [accounts])
+
+  const connectedCount = useMemo(
+    () =>
+      resolvedMarketplaces.filter(
+        (item) => item.status === "connected",
+      ).length,
+    [resolvedMarketplaces],
+  )
+
+  const readyToConnectCount = useMemo(
+    () =>
+      resolvedMarketplaces.filter(
+        (item) => item.status !== "connected",
+      ).length,
+    [resolvedMarketplaces],
+  )
+
+  const catalogCount = useMemo(
+    () =>
+      resolvedMarketplaces.reduce(
+        (total, marketplace) => total + (marketplace.productsCount || 0),
+        0,
+      ),
+    [resolvedMarketplaces],
+  )
 
   return (
     <div className="space-y-10">
@@ -90,12 +226,33 @@ export default function MarketplacesPage() {
           <Button
             variant="outline"
             className="border-slate-300 text-slate-600 hover:text-slate-900"
+            disabled={loadingAccounts}
+            onClick={fetchAccounts}
+          >
+            {loadingAccounts ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Atualizando...
+              </span>
+            ) : (
+              "Atualizar status"
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            className="border-slate-300 text-slate-600 hover:text-slate-900"
             onClick={() => router.push("/admin/preferences/marketplaces")}
           >
             Central de Ajuda
           </Button>
         </div>
       </div>
+
+      {errorMessage ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+          {errorMessage}
+        </div>
+      ) : null}
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <Card className="border-0 shadow-lg shadow-slate-200/60">
@@ -110,7 +267,7 @@ export default function MarketplacesPage() {
           <CardContent className="p-6">
             <p className="text-sm font-medium text-slate-500">Prontas para conectar</p>
             <p className="text-3xl font-bold text-slate-900 mt-2">
-              {marketplaces.filter((m) => m.status !== "connected").length}
+              {readyToConnectCount}
             </p>
             <p className="text-sm text-slate-500 mt-1">
               Complete a configuração para habilitar vendas
@@ -121,9 +278,7 @@ export default function MarketplacesPage() {
         <Card className="border-0 shadow-lg shadow-slate-200/60">
           <CardContent className="p-6">
             <p className="text-sm font-medium text-slate-500">Catálogo disponível</p>
-            <p className="text-3xl font-bold text-slate-900 mt-2">
-              {marketplaces.reduce((total, marketplace) => total + (marketplace.productsCount || 0), 0)}
-            </p>
+            <p className="text-3xl font-bold text-slate-900 mt-2">{catalogCount}</p>
             <p className="text-sm text-slate-500 mt-1">
               Produtos sincronizados com marketplaces conectados
             </p>
@@ -140,9 +295,15 @@ export default function MarketplacesPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          {marketplaces.map((marketplace) => {
+          {resolvedMarketplaces.map((marketplace) => {
             const Icon = marketplace.icon
             const status = statusConfig[marketplace.status]
+            const hasAccounts = marketplace.accounts.length > 0
+            const isMercadoLivre = marketplace.provider === "mercado_livre"
+            const isConnecting = connectingProvider === "mercado_livre"
+            const nextExpiration = hasAccounts
+              ? getNextExpirationLabel(marketplace.accounts)
+              : null
 
             return (
               <Card
@@ -181,23 +342,56 @@ export default function MarketplacesPage() {
                         </div>
                       </div>
 
-                      {marketplace.productsCount ? (
-                        <div className="grid grid-cols-2 gap-3 text-sm text-slate-500">
-                          <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3">
-                            <p className="text-xs uppercase tracking-wide text-slate-400">
-                              Produtos ativos
-                            </p>
-                            <p className="text-base font-semibold text-slate-900 mt-1">
-                              {marketplace.productsCount}
-                            </p>
+                      {hasAccounts ? (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 gap-3 text-sm text-slate-500 sm:grid-cols-2">
+                            <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3">
+                              <p className="text-xs uppercase tracking-wide text-slate-400">
+                                Contas conectadas
+                              </p>
+                              <p className="text-base font-semibold text-slate-900 mt-1">
+                                {marketplace.accounts.length}
+                              </p>
+                            </div>
+                            <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3">
+                              <p className="text-xs uppercase tracking-wide text-slate-400">
+                                Próxima expiração
+                              </p>
+                              <p className="text-base font-semibold text-slate-900 mt-1">
+                                {nextExpiration}
+                              </p>
+                            </div>
                           </div>
-                          <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3">
-                            <p className="text-xs uppercase tracking-wide text-slate-400">
-                              Status da sincronização
-                            </p>
-                            <p className="text-base font-semibold text-slate-900 mt-1">
-                              {marketplace.lastSync ? "Automática" : "Manual"}
-                            </p>
+
+                          <div className="space-y-2">
+                            {marketplace.accounts.map((account) => {
+                              const accountName =
+                                account.accountName?.trim() || `Conta ${account.externalUserId}`
+                              const tokenExpiresAt = formatDateTime(account.tokenExpiresAt)
+
+                              return (
+                                <div
+                                  key={account.id}
+                                  className="rounded-lg border border-slate-100 bg-white px-4 py-3"
+                                >
+                                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                                    <div>
+                                      <p className="text-sm font-semibold text-slate-900">
+                                        {accountName}
+                                      </p>
+                                      <p className="text-xs text-slate-500">
+                                        ID externo: {account.externalUserId}
+                                      </p>
+                                    </div>
+                                    {tokenExpiresAt ? (
+                                      <span className="text-xs text-slate-400">
+                                        Token expira em {tokenExpiresAt}
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                </div>
+                              )
+                            })}
                           </div>
                         </div>
                       ) : null}
@@ -206,11 +400,31 @@ export default function MarketplacesPage() {
                     <div className="flex flex-col gap-2 sm:items-end">
                       <Button
                         className="w-full sm:w-auto"
-                        onClick={() =>
-                          router.push(`/admin/preferences/marketplaces/${marketplace.id}`)
-                        }
+                        disabled={isMercadoLivre && isConnecting}
+                        onClick={() => {
+                          if (isMercadoLivre) {
+                            void handleMercadoLivreConnection()
+                          } else {
+                            router.push(`/admin/preferences/marketplaces/${marketplace.id}`)
+                          }
+                        }}
                       >
-                        {marketplace.status === "connected" ? "Gerenciar" : "Conectar"}
+                        {isMercadoLivre ? (
+                          isConnecting ? (
+                            <span className="flex items-center gap-2">
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Conectando...
+                            </span>
+                          ) : hasAccounts ? (
+                            "Adicionar conta"
+                          ) : (
+                            "Conectar"
+                          )
+                        ) : marketplace.status === "connected" ? (
+                          "Gerenciar"
+                        ) : (
+                          "Conectar"
+                        )}
                       </Button>
                       <Button
                         variant="outline"
@@ -253,3 +467,4 @@ export default function MarketplacesPage() {
     </div>
   )
 }
+

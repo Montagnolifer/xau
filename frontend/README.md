@@ -8,7 +8,7 @@ Crie um arquivo `.env.local` na raiz do projeto com as seguintes variáveis:
 
 ```env
 # API Configuration
-NEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_API_URL=http://localhost:3101
 ```
 
 ### 2. Instalação de Dependências

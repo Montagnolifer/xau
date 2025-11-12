@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const API_BASE_URL = 'http://localhost:3005';
+const API_BASE_URL = 'http://localhost:3105';
 
 // Função para fazer login como admin
 async function loginAsAdmin() {
