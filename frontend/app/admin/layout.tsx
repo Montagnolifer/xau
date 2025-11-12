@@ -119,6 +119,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         subItems: [
           { name: "Configurações", href: "/admin/configuracoes", icon: Settings },
           { name: "Layout", href: "/admin/configuracoes/layout", icon: LayoutTemplate },
+          { name: "Marketplaces", href: "/admin/preferences/marketplaces", icon: LayoutTemplate },
         ],
       },
     ],
