@@ -6,9 +6,10 @@ import { MarketplaceService } from './marketplace.service'
 import { MarketplaceController } from './marketplace.controller'
 import { MercadoLivreService } from './ml/ml.service'
 import { MercadoLivreController } from './ml/ml.controller'
+import { ProductModule } from '../product/product.module'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([MarketplaceAccount]), HttpModule],
+  imports: [TypeOrmModule.forFeature([MarketplaceAccount]), HttpModule, ProductModule],
   controllers: [MarketplaceController, MercadoLivreController],
   providers: [MarketplaceService, MercadoLivreService],
   exports: [MarketplaceService, MercadoLivreService],

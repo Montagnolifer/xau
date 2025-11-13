@@ -6,6 +6,7 @@ import { CategoriesApi } from './categories-api';
 import { ordersApi } from './orders-api';
 import { cartApi } from './cart-api';
 import { marketplacesApi } from './marketplaces-api';
+import { importMlApi } from './import-ml';
 
 // Exportar interfaces e tipos
 export * from './base-client';
@@ -15,6 +16,7 @@ export * from './orders-api';
 export * from './categories-api';
 export * from './cart-api';
 export * from './marketplaces-api';
+export * from './import-ml';
 
 // Criar instâncias das APIs
 const baseUrl = config.api.baseUrl;
@@ -23,7 +25,7 @@ export const usersApi = new UsersApi(baseUrl);
 export const productsApi = new ProductsApi(baseUrl);
 export const categoriesApi = new CategoriesApi(baseUrl);
 export { cartApi };
-export { marketplacesApi };
+export { marketplacesApi, importMlApi };
 
 // Cliente API principal (mantém compatibilidade com código existente)
 export class ApiClient extends BaseApiClient {

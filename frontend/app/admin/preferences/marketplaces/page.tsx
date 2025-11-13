@@ -6,6 +6,13 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { useToast } from "@/hooks/use-toast"
+import {
   LucideIcon,
   Package,
   Loader2,
@@ -19,6 +26,7 @@ import {
   marketplacesApi,
   type MarketplaceAccount,
 } from "@/lib/api/marketplaces-api"
+import { ImportProductsDialog } from "./components/import-products-dialog"
 
 type MarketplaceStatus = "connected" | "pending" | "disconnected"
 
@@ -135,6 +143,9 @@ export default function MarketplacesPage() {
   )
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [importDialogOpen, setImportDialogOpen] = useState(false)
+  const [importAccount, setImportAccount] = useState<MarketplaceAccount | null>(null)
+  const { toast } = useToast()
   const mlStatus = searchParams.get("ml_status")
 
   const fetchAccounts = useCallback(async () => {
@@ -186,6 +197,45 @@ export default function MarketplacesPage() {
       setConnectingProvider(null)
     }
   }, [])
+
+  const handleImportProductsClick = useCallback(
+    (account: MarketplaceAccount) => {
+      if (!account) {
+        return
+      }
+
+      if (account.provider !== "mercado_livre") {
+        toast({
+          title: "Importação indisponível",
+          description:
+            "A importação de catálogo está disponível apenas para contas Mercado Livre neste momento.",
+        })
+        return
+      }
+
+      setImportAccount(account)
+      setImportDialogOpen(true)
+    },
+    [toast],
+  )
+
+  const handleImportDialogOpenChange = useCallback((open: boolean) => {
+    setImportDialogOpen(open)
+    if (!open) {
+      setImportAccount(null)
+    }
+  }, [])
+
+  const handleImportFinished = useCallback(
+    async (imported: number) => {
+      if (imported > 0) {
+        await fetchAccounts()
+      }
+      setImportDialogOpen(false)
+      setImportAccount(null)
+    },
+    [fetchAccounts],
+  )
 
   const resolvedMarketplaces = useMemo<MarketplaceCardData[]>(() => {
     return marketplaceDefinitions.map((definition) => {
@@ -561,13 +611,54 @@ export default function MarketplacesPage() {
                       <div className="flex items-center justify-center gap-2">
                         {hasAccounts ? (
                           <>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="rounded-full border-slate-200 text-slate-600 hover:text-slate-900"
-                            >
-                              <Package className="h-4 w-4" />
-                            </Button>
+                            {marketplace.accounts.length > 1 ? (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="rounded-full border-slate-200 text-slate-600 hover:text-slate-900"
+                                  >
+                                    <Package className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-72">
+                                  {marketplace.accounts.map((account) => (
+                                    <DropdownMenuItem
+                                      key={account.id}
+                                      onSelect={(event) => {
+                                        event.preventDefault()
+                                        handleImportProductsClick(account)
+                                      }}
+                                    >
+                                      <div className="flex flex-col">
+                                        <span className="text-sm font-medium text-slate-700">
+                                          {account.accountName?.trim() ||
+                                            `Conta ${account.externalUserId}`}
+                                        </span>
+                                        <span className="text-xs text-slate-400">
+                                          ID externo: {account.externalUserId}
+                                        </span>
+                                      </div>
+                                    </DropdownMenuItem>
+                                  ))}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="rounded-full border-slate-200 text-slate-600 hover:text-slate-900"
+                                onClick={() => {
+                                  const accountToUse = marketplace.accounts[0]
+                                  if (accountToUse) {
+                                    handleImportProductsClick(accountToUse)
+                                  }
+                                }}
+                              >
+                                <Package className="h-4 w-4" />
+                              </Button>
+                            )}
                             <Button
                               variant="outline"
                               size="icon"
@@ -609,6 +700,13 @@ export default function MarketplacesPage() {
 
         </div>
       </div>
+
+      <ImportProductsDialog
+        open={importDialogOpen}
+        onOpenChange={handleImportDialogOpenChange}
+        account={importAccount ?? undefined}
+        onFinished={handleImportFinished}
+      />
     </div>
   )
 }

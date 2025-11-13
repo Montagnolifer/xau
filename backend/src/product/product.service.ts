@@ -285,6 +285,44 @@ export class ProductService {
     return { message: 'Produto deletado com sucesso' }
   }
 
+  async importMany(
+    items: Array<{ payload: CreateProductDto; reference?: string }>,
+  ) {
+    const results: Array<{
+      reference?: string
+      success: boolean
+      product?: Product
+      error?: string
+    }> = []
+
+    for (const item of items) {
+      try {
+        const product = await this.create(item.payload, undefined)
+        results.push({
+          reference: item.reference,
+          success: true,
+          product,
+        })
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'Falha ao importar produto'
+        this.logger.error(
+          `Erro ao importar produto (referência: ${item.reference ?? 'sem referência'})`,
+          error,
+        )
+        results.push({
+          reference: item.reference,
+          success: false,
+          error: message,
+        })
+      }
+    }
+
+    return results
+  }
+
   async toggleFavorite(id: number): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },

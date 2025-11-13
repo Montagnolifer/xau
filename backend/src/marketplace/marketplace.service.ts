@@ -41,6 +41,18 @@ export class MarketplaceService {
     return account
   }
 
+  async getAccountByIdOrFail(id: number): Promise<MarketplaceAccount> {
+    const account = await this.marketplaceRepository.findOne({
+      where: { id },
+    })
+
+    if (!account) {
+      throw new NotFoundException('Conta de marketplace não encontrada')
+    }
+
+    return account
+  }
+
   async upsertAccount(
     provider: MarketplaceProvider,
     externalUserId: string,

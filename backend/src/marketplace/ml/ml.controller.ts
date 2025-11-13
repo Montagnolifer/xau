@@ -1,6 +1,8 @@
-import { Controller, Get, Post, Query, Res } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Query, Res, UseGuards } from '@nestjs/common'
 import { Response } from 'express'
 import { MercadoLivreService } from './ml.service'
+import { JwtAuthGuard } from '../../auth/jwt-auth.guard'
+import { ImportMercadoLivreProductsDto } from './dto/import-ml-products.dto'
 
 @Controller('marketplace/ml')
 export class MercadoLivreController {
@@ -9,6 +11,24 @@ export class MercadoLivreController {
   @Post('authorize')
   async authorize() {
     return this.mercadoLivreService.generateAuthorizationUrl()
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('accounts/:accountId/products')
+  async listAccountProducts(@Param('accountId') accountId: string) {
+    return this.mercadoLivreService.listAccountProducts(Number(accountId))
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('accounts/:accountId/import')
+  async importProducts(
+    @Param('accountId') accountId: string,
+    @Body() payload: ImportMercadoLivreProductsDto,
+  ) {
+    return this.mercadoLivreService.importProductsFromAccount(
+      Number(accountId),
+      payload,
+    )
   }
 
   @Get('callback')
