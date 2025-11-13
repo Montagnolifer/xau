@@ -292,7 +292,7 @@ export default function HomePage() {
             <Crown className="h-10 w-10 text-brand-primary" />
             <Image 
               src="/logo/logo.png" 
-              alt="Emma Santoni" 
+              alt="Xau " 
               width={200} 
               height={80}
               className="h-20 w-auto"

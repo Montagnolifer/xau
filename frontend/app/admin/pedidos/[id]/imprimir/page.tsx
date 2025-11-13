@@ -160,7 +160,7 @@ export default function PrintOrderPage() {
               <div className="mb-2">
                 <img 
                   src="/logo/logo.png" 
-                  alt="Emma Santoni" 
+                  alt="Xau " 
                   className="h-20 w-auto object-contain"
                 />
               </div>
@@ -168,7 +168,7 @@ export default function PrintOrderPage() {
 
             {/* Informações da empresa */}
             <div className="flex-1 text-right">
-              <div className="text-lg font-bold text-gray-800 mb-2">Emma Santoni</div>
+              <div className="text-lg font-bold text-gray-800 mb-2">Xau </div>
               <div className="text-sm text-gray-600 mb-1">Av. João Cernach, 2331</div>
               <div className="text-sm text-gray-600 mb-1">Centro, Birigui-SP</div>
               <div className="text-sm text-gray-600 mb-1">Telefone: (18) 92004-4699</div>

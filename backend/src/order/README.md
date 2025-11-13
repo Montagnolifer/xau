@@ -1,6 +1,6 @@
 # Sistema de Pedidos
 
-Este módulo implementa o sistema completo de pedidos para o catálogo Emma Santoni.
+Este módulo implementa o sistema completo de pedidos para o catálogo Xau .
 
 ## Funcionalidades
 

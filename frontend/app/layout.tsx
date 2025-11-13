@@ -11,8 +11,8 @@ import { Toaster } from "@/components/ui/toaster"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Emma Santoni - Produtos Premium",
-  description: "Catálogo de calçados premium Emma Santoni com margens de lucro garantidas",
+  title: "Xau  - Produtos Premium",
+  description: "Catálogo de calçados premium Xau  com margens de lucro garantidas",
     generator: 'v0.dev'
 }
 

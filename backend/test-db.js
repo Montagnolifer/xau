@@ -4,7 +4,7 @@ async function testDatabase() {
   const client = new Client({
     host: 'localhost',
     port: 5432,
-    database: 'emma_catalogo',
+    database: 'Xau_catalogo',
     user: 'postgres',
     password: 'postgres'
   });

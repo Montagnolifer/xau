@@ -4,7 +4,7 @@ export const config = {
     baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
   },
   app: {
-    name: 'Catálogo Emma',
+    name: 'Catálogo Xau',
     version: '1.0.0',
   },
   features: {

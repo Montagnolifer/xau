@@ -1,4 +1,4 @@
-# Backend - Catálogo Emma
+# Backend - Catálogo Xau
 
 ## Configuração
 
@@ -12,7 +12,7 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=sua_senha
-DB_DATABASE=catalogoemma
+DB_DATABASE=catalogoXau
 
 # Server Configuration
 PORT=3101

@@ -202,7 +202,7 @@ export default function LoginPage() {
           <div className="flex items-center justify-center gap-3 mb-4">
             <Crown className="h-10 w-10 text-brand-primary" />
             <h1 className="text-3xl font-bold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">
-              Emma Santoni
+              Xau 
             </h1>
             <Crown className="h-10 w-10 text-brand-primary" />
           </div>

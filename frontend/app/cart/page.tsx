@@ -159,7 +159,7 @@ export default function CartPage() {
   }
 
   const createWhatsAppMessage = (orderId?: string) => {
-    let message = "🛍️ *PEDIDO EMMA SANTONI*\n\n"
+    let message = "🛍️ *PEDIDO Xau *\n\n"
     message += "Olá! Gostaria de fazer um pedido no atacado:\n\n"
     
     if (orderId) {
@@ -255,7 +255,7 @@ export default function CartPage() {
           <div className="flex items-center justify-center gap-3 mb-4">
             <ShoppingCart className="h-10 w-10 text-brand-primary" />
             <h1 className="text-4xl font-bold bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent">
-              Sacola Emma
+              Sacola Xau
             </h1>
           </div>
           <p className="text-gray-600 text-base">

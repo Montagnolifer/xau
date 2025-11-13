@@ -1,4 +1,4 @@
-# Frontend - Catálogo Emma
+# Frontend - Catálogo Xau
 
 ## Configuração
 
