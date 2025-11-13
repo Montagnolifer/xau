@@ -1,7 +1,7 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -116,12 +116,16 @@ function getNextExpirationLabel(accounts: MarketplaceAccount[]): string {
 
 export default function MarketplacesPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const processedParamsRef = useRef(false)
   const [accounts, setAccounts] = useState<MarketplaceAccount[]>([])
   const [loadingAccounts, setLoadingAccounts] = useState(true)
   const [connectingProvider, setConnectingProvider] = useState<string | null>(
     null,
   )
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const mlStatus = searchParams.get("ml_status")
 
   const fetchAccounts = useCallback(async () => {
     try {
@@ -142,6 +146,21 @@ export default function MarketplacesPage() {
   useEffect(() => {
     fetchAccounts()
   }, [fetchAccounts])
+
+  useEffect(() => {
+    if (processedParamsRef.current) {
+      return
+    }
+
+    if (mlStatus === "success") {
+      processedParamsRef.current = true
+      setSuccessMessage(
+        "Integração com o Mercado Livre concluída com sucesso! A partir de agora você pode acompanhar tudo por aqui.",
+      )
+      setConnectingProvider(null)
+      router.replace("/admin/preferences/marketplaces", { scroll: false })
+    }
+  }, [mlStatus, router])
 
   const handleMercadoLivreConnection = useCallback(async () => {
     try {
@@ -251,6 +270,15 @@ export default function MarketplacesPage() {
       {errorMessage ? (
         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
           {errorMessage}
+        </div>
+      ) : null}
+
+      {successMessage ? (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 shadow-sm">
+          <p className="text-sm font-semibold text-emerald-800">
+            Tudo pronto por aqui! ✨
+          </p>
+          <p className="mt-1 text-emerald-700">{successMessage}</p>
         </div>
       ) : null}
 

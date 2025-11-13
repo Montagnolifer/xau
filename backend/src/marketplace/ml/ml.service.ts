@@ -70,6 +70,18 @@ export class MercadoLivreService {
     return this.successRedirect
   }
 
+  getDefaultSuccessRedirectUrl(): string {
+    const baseUrl =
+      this.configService.get<string>('APP_WEB_URL') ??
+      this.configService.get<string>('FRONTEND_URL')
+
+    if (baseUrl && baseUrl.trim().length > 0) {
+      return `${baseUrl.replace(/\/$/, '')}/admin/preferences/marketplaces?ml_status=success`
+    }
+
+    return '/admin/preferences/marketplaces?ml_status=success'
+  }
+
   getErrorRedirectUrl(): string | undefined {
     return this.errorRedirect
   }

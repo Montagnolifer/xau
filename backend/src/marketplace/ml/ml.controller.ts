@@ -19,17 +19,11 @@ export class MercadoLivreController {
   ) {
     try {
       await this.mercadoLivreService.handleCallback(code, state)
-      const redirectUrl = this.mercadoLivreService.getSuccessRedirectUrl()
+      const redirectUrl =
+        this.mercadoLivreService.getSuccessRedirectUrl() ??
+        this.mercadoLivreService.getDefaultSuccessRedirectUrl()
 
-      if (redirectUrl) {
-        return res.redirect(302, redirectUrl)
-      }
-
-      return res
-        .status(200)
-        .send(
-          '<html><body><p>Conta Mercado Livre conectada com sucesso. Você pode fechar esta janela.</p></body></html>',
-        )
+      return res.redirect(302, redirectUrl)
     } catch (error) {
       const redirectUrl = this.mercadoLivreService.getErrorRedirectUrl()
       if (redirectUrl) {
