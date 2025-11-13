@@ -7,7 +7,11 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   LucideIcon,
+  Package,
   Loader2,
+  RefreshCw,
+  Pencil,
+  Trash2,
   ShoppingBag,
   Store,
 } from "lucide-react"
@@ -34,6 +38,7 @@ type MarketplaceCardData = MarketplaceDefinition & {
   lastSync?: string
   productsCount?: number
   accounts: MarketplaceAccount[]
+  displayName?: string
 }
 
 const marketplaceDefinitions: MarketplaceDefinition[] = [
@@ -80,6 +85,11 @@ const statusConfig: Record<
     badgeClasses: "bg-slate-100 text-slate-600 border-slate-200",
     description: "Conecte-se para habilitar esta integração",
   },
+}
+
+const providerBadgeClasses: Record<string, string> = {
+  mercado_livre: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  shopee: "bg-orange-100 text-orange-800 border-orange-200",
 }
 
 const dateTimeFormatter = new Intl.DateTimeFormat("pt-BR", {
@@ -266,6 +276,11 @@ export default function MarketplacesPage() {
             ? `Atualizado em ${lastUpdatedLabel}`
             : undefined,
           accounts: providerAccounts,
+          displayName:
+            providerAccounts.length === 1
+              ? providerAccounts[0]?.accountName?.trim() ||
+                `Conta ${providerAccounts[0].externalUserId}`
+              : baseDefinition.name,
           productsCount: undefined,
         }
       })
@@ -476,6 +491,15 @@ export default function MarketplacesPage() {
             const nextExpiration = hasAccounts
               ? getNextExpirationLabel(marketplace.accounts)
               : null
+            const providerLabel =
+              marketplace.provider && marketplaceDefinitionByProvider[marketplace.provider]
+                ? marketplaceDefinitionByProvider[marketplace.provider].name
+                : marketplace.name
+            const providerBadge =
+              marketplace.provider &&
+              providerBadgeClasses[marketplace.provider]
+                ? providerBadgeClasses[marketplace.provider]
+                : "bg-slate-100 text-slate-700 border-slate-200"
 
             return (
               <Card
@@ -494,98 +518,88 @@ export default function MarketplacesPage() {
                         <div className="flex-1">
                           <div className="flex flex-wrap items-center gap-2">
                             <h3 className="text-lg font-semibold text-slate-900">
-                              {marketplace.name}
+                              {marketplace.displayName ?? marketplace.name}
                             </h3>
-                            <Badge variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700">
-                              {marketplace.category}
+                            <Badge variant="outline" className={providerBadge}>
+                              {providerLabel}
                             </Badge>
                             <Badge variant="outline" className={status.badgeClasses}>
                               {status.label}
                             </Badge>
                           </div>
-                          <p className="text-sm text-slate-500 mt-1">{marketplace.description}</p>
-                          {marketplace.lastSync ? (
-                            <p className="text-xs font-medium text-emerald-600 mt-2">
-                              {marketplace.lastSync}
-                            </p>
-                          ) : (
-                            <p className="text-xs text-slate-400 mt-2">{status.description}</p>
-                          )}
-                        </div>
-                      </div>
-
-                      {hasAccounts ? (
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 gap-3 text-sm text-slate-500 sm:grid-cols-2">
-                            <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3">
-                              <p className="text-xs uppercase tracking-wide text-slate-400">
-                                Contas conectadas
+                          <div className="flex flex-col gap-1 mt-2">
+                            {marketplace.lastSync ? (
+                              <p className="text-xs font-medium text-emerald-600">
+                                {marketplace.lastSync}
                               </p>
-                              <p className="text-base font-semibold text-slate-900 mt-1">
-                                {marketplace.accounts.length}
-                              </p>
-                            </div>
-                            <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3">
-                              <p className="text-xs uppercase tracking-wide text-slate-400">
-                                Próxima expiração
-                              </p>
-                              <p className="text-base font-semibold text-slate-900 mt-1">
-                                {nextExpiration}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            {marketplace.accounts.map((account) => {
-                              const accountName =
-                                account.accountName?.trim() || `Conta ${account.externalUserId}`
+                            ) : (
+                              <p className="text-xs text-slate-400">{status.description}</p>
+                            )}
+                            {marketplace.accounts.slice(0, 1).map((account) => {
                               const tokenExpiresAt = formatDateTime(account.tokenExpiresAt)
-
                               return (
-                                <div
-                                  key={account.id}
-                                  className="rounded-lg border border-slate-100 bg-white px-4 py-3"
-                                >
-                                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                                    <div>
-                                      <p className="text-sm font-semibold text-slate-900">
-                                        {accountName}
-                                      </p>
-                                      <p className="text-xs text-slate-500">
-                                        ID externo: {account.externalUserId}
-                                      </p>
-                                    </div>
-                                    {tokenExpiresAt ? (
-                                      <span className="text-xs text-slate-400">
-                                        Token expira em {tokenExpiresAt}
-                                      </span>
-                                    ) : null}
-                                  </div>
+                                <div key={account.id} className="text-xs text-slate-400">
+                                  <span className="font-semibold text-slate-600">
+                                    {account.accountName?.trim() ||
+                                      `Conta ${account.externalUserId}`}
+                                  </span>
+                                  <span className="ml-2">
+                                    ID externo: {account.externalUserId}
+                                  </span>
+                                  {tokenExpiresAt ? (
+                                    <span className="ml-2">
+                                      Token expira em {tokenExpiresAt}
+                                    </span>
+                                  ) : null}
                                 </div>
                               )
                             })}
                           </div>
                         </div>
-                      ) : null}
-                    </div>
+                      </div>
 
-                    <div className="flex flex-col gap-2 sm:items-end">
-                      <Button
-                        className="w-full sm:w-auto"
-                        disabled={loadingAccounts}
-                        onClick={() => {
-                          void fetchAccounts()
-                        }}
-                      >
-                        {loadingAccounts ? (
-                          <span className="flex items-center gap-2">
+                      <div className="flex items-center justify-center gap-2">
+                        {hasAccounts ? (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="rounded-full border-slate-200 text-slate-600 hover:text-slate-900"
+                            >
+                              <Package className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="rounded-full border-slate-200 text-red-500 hover:text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="rounded-full border-slate-200 text-slate-600 hover:text-slate-900"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </>
+                        ) : null}
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="rounded-full border-slate-200 text-slate-600 hover:text-slate-900"
+                          disabled={loadingAccounts}
+                          onClick={() => {
+                            void fetchAccounts()
+                          }}
+                        >
+                          {loadingAccounts ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
-                            Atualizando...
-                          </span>
-                        ) : (
-                          "Atualizar"
-                        )}
-                      </Button>
+                          ) : (
+                            <RefreshCw className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
