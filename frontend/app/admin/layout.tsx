@@ -120,6 +120,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           { name: "Configurações", href: "/admin/configuracoes", icon: Settings },
           { name: "Layout", href: "/admin/configuracoes/layout", icon: LayoutTemplate },
           { name: "Marketplaces", href: "/admin/preferences/marketplaces", icon: LayoutTemplate },
+          { name: "Pagamento", href: "/admin/preferences/payment", icon: LayoutTemplate },
         ],
       },
     ],
