@@ -40,7 +40,7 @@ const dataSource = new DataSource({
   username: process.env.DB_USERNAME ?? 'postgres',
   password: process.env.DB_PASSWORD ?? 'postgres',
   database: process.env.DB_DATABASE ?? 'postgres',
-  entities: [Admin],
+  entities: [resolve(__dirname, '../src/**/*.entity.{ts,js}')],
   synchronize: false,
   ssl:
     process.env.NODE_ENV === 'production'
@@ -82,6 +82,8 @@ async function bootstrap() {
   try {
     await dataSource.initialize();
     console.log('Conexão com o banco estabelecida.');
+    await dataSource.synchronize();
+    console.log('Estrutura do banco sincronizada.');
     await upsertAdmin();
     console.log('Operação concluída com sucesso!');
     await dataSource.destroy();
@@ -100,3 +102,5 @@ async function bootstrap() {
 }
 
 bootstrap();
+
+//npx ts-node scripts/generate-admin-password.ts
