@@ -112,6 +112,10 @@ export class CreateProductDto {
   youtubeUrl?: string
 
   @IsOptional()
+  @IsString()
+  mercadoLivreId?: string
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   images?: string[]

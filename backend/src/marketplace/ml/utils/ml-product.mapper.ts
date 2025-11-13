@@ -132,6 +132,7 @@ export function mapMercadoLivreItemToCreateProduct(
         item.seller_custom_field.trim().length > 0 &&
         item.seller_custom_field.trim()) ||
       item.id,
+    mercadoLivreId: item.id,
     images: Array.from(imagesSet),
     variations: [],
   }

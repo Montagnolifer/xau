@@ -334,6 +334,19 @@ export class MercadoLivreService {
         continue
       }
 
+      // Verifica se o produto já foi importado anteriormente
+      const existingProduct = await this.productService.findByMercadoLivreId(
+        productId,
+      )
+      if (existingProduct) {
+        failed++
+        errors.push({
+          productId,
+          message: 'Produto já foi importado anteriormente',
+        })
+        continue
+      }
+
       try {
         const productPayload = mapMercadoLivreItemToCreateProduct(item, {
           categoryId: payload.categoryId,

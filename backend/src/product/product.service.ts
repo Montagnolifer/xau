@@ -344,4 +344,11 @@ export class ProductService {
       order: { id: 'DESC' },
     })
   }
+
+  async findByMercadoLivreId(mercadoLivreId: string): Promise<Product | null> {
+    return this.productRepository.findOne({
+      where: { mercadoLivreId },
+      relations: ['variations', 'categoryEntity'],
+    })
+  }
 }

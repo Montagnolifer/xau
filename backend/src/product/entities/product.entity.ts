@@ -64,6 +64,9 @@ export class Product {
   @Column({ default: false })
   isFavorite: boolean
 
+  @Column({ name: 'mercado_livre_id', type: 'varchar', length: 255, nullable: true })
+  mercadoLivreId: string | null
+
   @OneToMany(() => ProductVariation, (variation) => variation.product, { cascade: true })
   variations: ProductVariation[]
 

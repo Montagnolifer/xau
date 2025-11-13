@@ -46,6 +46,7 @@ interface Product {
   sales: number
   trend: "up" | "down" | "stable"
   isFavorite: boolean
+  mercadoLivreId?: string | null
 }
 
 const resolveProductImage = (product: any): string | undefined => {
@@ -100,6 +101,7 @@ export default function ProductsPage() {
           sales: p.sales || 0,
           trend: "stable", // ou lógica para trend se houver
           isFavorite: p.isFavorite || false,
+          mercadoLivreId: p.mercadoLivreId || null,
         }))
       )
     } catch (err) {
@@ -365,6 +367,15 @@ export default function ProductsPage() {
                           >
                             {product.status === "active" ? "Ativo" : "Inativo"}
                           </Badge>
+                          {product.mercadoLivreId && (
+                            <Badge 
+                              variant="outline" 
+                              className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white border-yellow-500 font-semibold"
+                              title={`Sincronizado com Mercado Livre (ID: ${product.mercadoLivreId})`}
+                            >
+                              ML
+                            </Badge>
+                          )}
                         </div>
 
                         <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-sm">
