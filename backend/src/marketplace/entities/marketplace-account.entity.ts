@@ -7,7 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm'
 
-export type MarketplaceProvider = 'mercado_livre'
+export type MarketplaceProvider = 'mercado_livre' | 'shopee'
 
 @Entity('marketplaces')
 @Index(['provider', 'externalUserId'], { unique: true })

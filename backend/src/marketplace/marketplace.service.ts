@@ -17,12 +17,12 @@ export class MarketplaceService {
     if (provider) {
       return this.marketplaceRepository.find({
         where: { provider },
-        order: { createdAt: 'DESC' },
+        order: { updatedAt: 'DESC' },
       })
     }
 
     return this.marketplaceRepository.find({
-      order: { createdAt: 'DESC' },
+      order: { provider: 'ASC', updatedAt: 'DESC' },
     })
   }
 
