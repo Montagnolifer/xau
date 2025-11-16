@@ -12,7 +12,7 @@ import { CurrencyInputUSD } from "@/components/ui/currency-input-usd"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { ArrowLeft, Upload, Save, Eye, Plus, Trash2, X } from "lucide-react"
+import { ArrowLeft, Upload, Save, Eye, Plus, Trash2, X, ChevronDown } from "lucide-react"
 import Link from "next/link"
 import { apiClient } from "@/lib/api"
 import type { CategoryFlatNode } from "@/types/category"
@@ -318,6 +318,9 @@ export default function NewProductPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [loadingProduct, setLoadingProduct] = useState(false)
+  const [isBasicOpen, setIsBasicOpen] = useState(true)
+  const [isPricingOpen, setIsPricingOpen] = useState(true)
+  const [isVariationsOpen, setIsVariationsOpen] = useState(true)
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -341,6 +344,74 @@ export default function NewProductPage() {
       options: string[]
     }>
   >([])
+  const [variantItems, setVariantItems] = useState<
+    Array<{
+      id: string
+      options: Record<string, string>
+      sku?: string
+      price: string
+      wholesalePrice?: string
+      priceUSD?: string
+      wholesalePriceUSD?: string
+      stock: string
+    }>
+  >([])
+  const hasVariations = variations.length > 0 && variations.every(v => v.name.trim().length > 0 && v.options.length > 0)
+
+  const stringifyOptionsKey = (options: Record<string, string>) => {
+    // Chave determinística baseada em nomes de eixos ordenados
+    const entries = Object.entries(options).sort(([a], [b]) => a.localeCompare(b))
+    return entries.map(([k, v]) => `${k}=${v}`).join('|')
+  }
+
+  const cartesianProduct = (arrays: string[][]): string[][] => {
+    if (arrays.length === 0) return []
+    return arrays.reduce<string[][]>(
+      (acc, curr) => acc.flatMap((a) => curr.map((c) => [...a, c])),
+      [[]],
+    )
+  }
+
+  const regenerateVariantItems = () => {
+    if (!hasVariations) {
+      setVariantItems([])
+      return
+    }
+
+    const axisNames = variations.map(v => v.name.trim())
+    const optionsPerAxis = variations.map(v => v.options.filter(Boolean))
+    const combos = cartesianProduct(optionsPerAxis)
+
+    // Mapa atual para preservar valores
+    const currentMap = new Map<string, (typeof variantItems)[number]>()
+    for (const item of variantItems) {
+      currentMap.set(stringifyOptionsKey(item.options), item)
+    }
+
+    const next: typeof variantItems = combos.map((values) => {
+      const options: Record<string, string> = {}
+      axisNames.forEach((axis, idx) => {
+        options[axis] = values[idx]
+      })
+      const key = stringifyOptionsKey(options)
+      const existing = currentMap.get(key)
+      if (existing) {
+        return existing
+      }
+      return {
+        id: Math.random().toString(36).slice(2),
+        options,
+        sku: '',
+        price: '',
+        wholesalePrice: '',
+        priceUSD: '',
+        wholesalePriceUSD: '',
+        stock: '0',
+      }
+    })
+
+    setVariantItems(next)
+  }
   const formatCategoryLabel = (category: CategoryFlatNode) => {
     if (category.path && Array.isArray(category.path) && category.path.length > 0) {
       return category.path.join(" > ")
@@ -446,34 +517,41 @@ export default function NewProductPage() {
 
   const addVariation = () => {
     setVariations([...variations, { name: "", options: [""] }])
+    // Gerar combinações após tick
+    setTimeout(regenerateVariantItems, 0)
   }
 
   const updateVariationName = (index: number, name: string) => {
     const newVariations = [...variations]
     newVariations[index].name = name
     setVariations(newVariations)
+    regenerateVariantItems()
   }
 
   const addVariationOption = (variationIndex: number) => {
     const newVariations = [...variations]
     newVariations[variationIndex].options.push("")
     setVariations(newVariations)
+    regenerateVariantItems()
   }
 
   const updateVariationOption = (variationIndex: number, optionIndex: number, value: string) => {
     const newVariations = [...variations]
     newVariations[variationIndex].options[optionIndex] = value
     setVariations(newVariations)
+    regenerateVariantItems()
   }
 
   const removeVariationOption = (variationIndex: number, optionIndex: number) => {
     const newVariations = [...variations]
     newVariations[variationIndex].options = newVariations[variationIndex].options.filter((_, i) => i !== optionIndex)
     setVariations(newVariations)
+    regenerateVariantItems()
   }
 
   const removeVariation = (index: number) => {
     setVariations(variations.filter((_, i) => i !== index))
+    setTimeout(regenerateVariantItems, 0)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -493,20 +571,44 @@ export default function NewProductPage() {
       return;
     }
     
-    // Validar preço
-    const price = parseFloat(formData.price);
-    if (isNaN(price) || price < 0) {
-      alert("Preço deve ser um número válido maior ou igual a zero");
-      setIsLoading(false);
-      return;
-    }
-    
-    // Validar estoque
-    const stock = parseInt(formData.stock);
-    if (isNaN(stock) || stock < 0) {
-      alert("Estoque deve ser um número válido maior ou igual a zero");
-      setIsLoading(false);
-      return;
+    // Derivar agregados quando houver combinações
+    let basePrice = parseFloat(formData.price)
+    let baseStock = parseInt(formData.stock)
+    const isComboMode = hasVariations && variantItems.length > 0
+    if (isComboMode) {
+      const prices = variantItems
+        .map(i => parseFloat(i.price))
+        .filter((n) => !Number.isNaN(n) && n >= 0)
+      const stocks = variantItems
+        .map(i => parseInt(i.stock))
+        .filter((n) => !Number.isNaN(n) && n >= 0)
+
+      if (prices.length === 0) {
+        alert("Informe ao menos um preço válido nas combinações")
+        setIsLoading(false);
+        return;
+      }
+      if (stocks.length === 0) {
+        alert("Informe ao menos um estoque válido nas combinações")
+        setIsLoading(false);
+        return;
+      }
+
+      basePrice = Math.min(...prices)
+      baseStock = stocks.reduce((a, b) => a + b, 0)
+    } else {
+      // Validar preço base
+      if (Number.isNaN(basePrice) || basePrice < 0) {
+        alert("Preço deve ser um número válido maior ou igual a zero");
+        setIsLoading(false);
+        return;
+      }
+      // Validar estoque base
+      if (Number.isNaN(baseStock) || baseStock < 0) {
+        alert("Estoque deve ser um número válido maior ou igual a zero");
+        setIsLoading(false);
+        return;
+      }
     }
     
     const data = new FormData();
@@ -544,19 +646,22 @@ export default function NewProductPage() {
     // Adicionar dados validados
     data.append("name", formData.name.trim());
     data.append("description", formData.description || "");
-    data.append("price", price.toString());
+    data.append("price", basePrice.toString());
     data.append("wholesalePrice", formData.wholesalePrice || "");
     data.append("priceUSD", priceUSD?.toString() || "");
     data.append("wholesalePriceUSD", wholesalePriceUSD?.toString() || "");
     data.append("categoryId", selectedCategory.id.toString());
     data.append("category", categoryLabel);
-    data.append("stock", stock.toString());
+    data.append("stock", baseStock.toString());
     data.append("status", formData.status.toString());
     data.append("sku", formData.sku || "");
     data.append("weight", formData.weight || "");
     data.append("dimensions", formData.dimensions || "");
     data.append("youtubeUrl", formData.youtubeUrl || "");
+    // Enviar eixos (retrocompat: também mantém 'variations')
     data.append("variations", JSON.stringify(variations));
+    data.append("variationAxes", JSON.stringify(variations));
+    data.append("variantItems", JSON.stringify(variantItems));
     
     // Enviar informações sobre imagens existentes que devem ser mantidas
     if (isEditing) {
@@ -623,10 +728,16 @@ export default function NewProductPage() {
           <div className="lg:col-span-2 space-y-8">
             {/* Basic Information */}
             <Card className="border-0 shadow-lg shadow-slate-200/50">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-slate-900">Informações Básicas</CardTitle>
-                <CardDescription>Dados principais do produto</CardDescription>
+              <CardHeader className="pb-4 grid grid-cols-[1fr_auto] items-center">
+                <div>
+                  <CardTitle className="text-slate-900">Informações Básicas</CardTitle>
+                  <CardDescription>Dados principais do produto</CardDescription>
+                </div>
+                <Button type="button" variant="ghost" size="sm" onClick={() => setIsBasicOpen(v => !v)} className="text-slate-600 ml-2">
+                  <ChevronDown className={"h-4 w-4 transition-transform " + (isBasicOpen ? "rotate-180" : "")} />
+                </Button>
               </CardHeader>
+              {isBasicOpen && (
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="sm:col-span-2">
@@ -726,14 +837,21 @@ export default function NewProductPage() {
                   </p>
                 </div>
               </CardContent>
+              )}
             </Card>
 
             {/* Pricing & Inventory */}
             <Card className="border-0 shadow-lg shadow-slate-200/50">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-slate-900">Preço e Estoque</CardTitle>
-                <CardDescription>Configurações de preço e inventário</CardDescription>
+              <CardHeader className="pb-4 grid grid-cols-[1fr_auto] items-center">
+                <div>
+                  <CardTitle className="text-slate-900">Preço e Estoque</CardTitle>
+                  <CardDescription>Configurações de preço e inventário</CardDescription>
+                </div>
+                <Button type="button" variant="ghost" size="sm" onClick={() => setIsPricingOpen(v => !v)} className="text-slate-600 ml-2">
+                  <ChevronDown className={"h-4 w-4 transition-transform " + (isPricingOpen ? "rotate-180" : "")} />
+                </Button>
               </CardHeader>
+              {isPricingOpen && (
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
@@ -746,8 +864,12 @@ export default function NewProductPage() {
                       className="mt-2"
                       value={formData.price}
                       onChange={(value) => handleInputChange("price", value)}
+                      disabled={hasVariations && variantItems.length > 0}
                       required
                     />
+                    {hasVariations && variantItems.length > 0 && (
+                      <p className="text-xs text-slate-500 mt-1">Preço base desativado (usando preço por combinação)</p>
+                    )}
                   </div>
 
                   <div>
@@ -760,6 +882,7 @@ export default function NewProductPage() {
                       className="mt-2"
                       value={formData.wholesalePrice}
                       onChange={(value) => handleInputChange("wholesalePrice", value)}
+                      disabled={hasVariations && variantItems.length > 0}
                     />
                   </div>
                 </div>
@@ -775,6 +898,7 @@ export default function NewProductPage() {
                       className="mt-2"
                       value={formData.priceUSD}
                       onChange={(value) => handleInputChange("priceUSD", value)}
+                      disabled={hasVariations && variantItems.length > 0}
                     />
                   </div>
 
@@ -788,6 +912,7 @@ export default function NewProductPage() {
                       className="mt-2"
                       value={formData.wholesalePriceUSD}
                       onChange={(value) => handleInputChange("wholesalePriceUSD", value)}
+                      disabled={hasVariations && variantItems.length > 0}
                     />
                   </div>
                 </div>
@@ -804,11 +929,16 @@ export default function NewProductPage() {
                       className="mt-2 border-slate-300 focus:border-indigo-500 focus:ring-indigo-500"
                       value={formData.stock}
                       onChange={(e) => handleInputChange("stock", e.target.value)}
+                      disabled={hasVariations && variantItems.length > 0}
                       required
                     />
+                    {hasVariations && variantItems.length > 0 && (
+                      <p className="text-xs text-slate-500 mt-1">Estoque base desativado (usando estoque por combinação)</p>
+                    )}
                   </div>
                 </div>
               </CardContent>
+              )}
             </Card>
 
             {/* Shipping 
@@ -853,10 +983,16 @@ export default function NewProductPage() {
 
             {/* Product Variations */}
             <Card className="border-0 shadow-lg shadow-slate-200/50">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-slate-900">Variações do Produto</CardTitle>
-                <CardDescription>Configure diferentes opções como cor, tamanho, etc.</CardDescription>
+              <CardHeader className="pb-4 grid grid-cols-[1fr_auto] items-center">
+                <div>
+                  <CardTitle className="text-slate-900">Variações do Produto</CardTitle>
+                  <CardDescription>Configure diferentes opções como cor, tamanho, etc.</CardDescription>
+                </div>
+                <Button type="button" variant="ghost" size="sm" onClick={() => setIsVariationsOpen(v => !v)} className="text-slate-600 ml-2">
+                  <ChevronDown className={"h-4 w-4 transition-transform " + (isVariationsOpen ? "rotate-180" : "")} />
+                </Button>
               </CardHeader>
+              {isVariationsOpen && (
               <CardContent className="space-y-6">
                 {variations.map((variation, variationIndex) => (
                   <div key={variationIndex} className="p-4 border border-slate-200 rounded-xl space-y-4">
@@ -932,7 +1068,92 @@ export default function NewProductPage() {
                   <Plus className="mr-2 h-4 w-4" />
                   Adicionar Variação
                 </Button>
+                {hasVariations && variantItems.length > 0 && (
+                  <div className="space-y-3 pt-2">
+                    <h4 className="font-medium text-slate-900">Combinações</h4>
+                    <div className="rounded-lg border border-slate-200">
+                      <div className="grid grid-cols-1 md:grid-cols-8 gap-3 p-3 bg-slate-50 text-xs font-medium text-slate-600">
+                        <div className="md:col-span-2">Opções</div>
+                        <div>SKU</div>
+                        <div>Preço</div>
+                        <div>Atacado</div>
+                        <div>USD</div>
+                        <div>Atacado USD</div>
+                        <div>Estoque</div>
+                      </div>
+                      <div className="divide-y divide-slate-200">
+                        {variantItems.map((item, idx) => {
+                          const optionsLabel = Object.entries(item.options)
+                            .map(([k, v]) => `${k}: ${v}`)
+                            .join(' • ')
+                          const onChangeItem = (key: keyof typeof item, value: any) => {
+                            setVariantItems((prev) => {
+                              const clone = [...prev]
+                              clone[idx] = { ...(clone[idx] || item), [key]: value }
+                              return clone
+                            })
+                          }
+                          return (
+                            <div key={item.id} className="grid grid-cols-1 md:grid-cols-8 gap-3 p-3 items-center">
+                              <div className="md:col-span-2 text-sm text-slate-700">{optionsLabel}</div>
+                              <div>
+                                <Input
+                                  value={item.sku || ''}
+                                  onChange={(e) => onChangeItem('sku', e.target.value)}
+                                  placeholder="SKU"
+                                  className="h-9"
+                                />
+                              </div>
+                              <div>
+                                <Input
+                                  value={item.price}
+                                  onChange={(e) => onChangeItem('price', e.target.value)}
+                                  placeholder="0,00"
+                                  className="h-9"
+                                />
+                              </div>
+                              <div>
+                                <Input
+                                  value={item.wholesalePrice || ''}
+                                  onChange={(e) => onChangeItem('wholesalePrice', e.target.value)}
+                                  placeholder="0,00"
+                                  className="h-9"
+                                />
+                              </div>
+                              <div>
+                                <Input
+                                  value={item.priceUSD || ''}
+                                  onChange={(e) => onChangeItem('priceUSD', e.target.value)}
+                                  placeholder="0.00"
+                                  className="h-9"
+                                />
+                              </div>
+                              <div>
+                                <Input
+                                  value={item.wholesalePriceUSD || ''}
+                                  onChange={(e) => onChangeItem('wholesalePriceUSD', e.target.value)}
+                                  placeholder="0.00"
+                                  className="h-9"
+                                />
+                              </div>
+                              <div>
+                                <Input
+                                  type="number"
+                                  value={item.stock}
+                                  onChange={(e) => onChangeItem('stock', e.target.value)}
+                                  placeholder="0"
+                                  className="h-9"
+                                />
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
+              )}
             </Card>
           </div>
 

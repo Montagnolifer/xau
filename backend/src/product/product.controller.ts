@@ -58,23 +58,27 @@ export class ProductController {
       createProductDto.category = createProductDto.category.trim();
     }
     
-    // Processar variações se for string
+    // Processar arrays (variations legacy, variationAxes e variantItems)
     if (files?.images?.length) {
       files.images.forEach((file) => {
         file.filename = generateUniqueFilename(file.originalname)
       })
     }
 
-    if (createProductDto.variations && typeof createProductDto.variations === 'string') {
+    const parseMaybeJson = (value: any) => {
+      if (typeof value !== 'string') return value
       try {
-        createProductDto.variations = JSON.parse(createProductDto.variations);
-      } catch (e) {
-        createProductDto.variations = [];
+        return JSON.parse(value)
+      } catch {
+        return undefined
       }
     }
+    createProductDto.variations = parseMaybeJson(createProductDto.variations) ?? createProductDto.variations ?? []
+    createProductDto.variationAxes = parseMaybeJson(createProductDto.variationAxes) ?? createProductDto.variationAxes ?? createProductDto.variations ?? []
+    createProductDto.variantItems = parseMaybeJson(createProductDto.variantItems) ?? createProductDto.variantItems ?? []
     
     // Converter campos numéricos
-    if (createProductDto.price !== undefined) {
+    if (createProductDto.price !== undefined && createProductDto.price !== '') {
       createProductDto.price = Number(createProductDto.price);
       if (isNaN(createProductDto.price) || createProductDto.price < 0) {
         throw new BadRequestException('Preço deve ser um número válido maior ou igual a zero');
@@ -108,10 +112,38 @@ export class ProductController {
       createProductDto.wholesalePriceUSD = undefined;
     }
     
-    if (createProductDto.stock !== undefined) {
+    if (createProductDto.stock !== undefined && createProductDto.stock !== '') {
       createProductDto.stock = Number(createProductDto.stock);
       if (isNaN(createProductDto.stock) || createProductDto.stock < 0) {
         throw new BadRequestException('Estoque deve ser um número válido maior ou igual a zero');
+      }
+    }
+
+    // Validação condicional de variantItems
+    const hasVariantItems = Array.isArray(createProductDto.variantItems) && createProductDto.variantItems.length > 0
+    if (hasVariantItems) {
+      for (const it of createProductDto.variantItems) {
+        if (it.price === undefined || it.price === null || isNaN(Number(it.price)) || Number(it.price) < 0) {
+          throw new BadRequestException('Cada combinação deve ter preço válido >= 0')
+        }
+        if (it.stock === undefined || it.stock === null || isNaN(Number(it.stock)) || Number(it.stock) < 0) {
+          throw new BadRequestException('Cada combinação deve ter estoque válido >= 0')
+        }
+        it.price = Number(it.price)
+        it.stock = Number(it.stock)
+        if (it.wholesalePrice !== undefined && it.wholesalePrice !== '') it.wholesalePrice = Number(it.wholesalePrice)
+        else it.wholesalePrice = undefined
+        if (it.priceUSD !== undefined && it.priceUSD !== '') it.priceUSD = Number(it.priceUSD)
+        else it.priceUSD = undefined
+        if (it.wholesalePriceUSD !== undefined && it.wholesalePriceUSD !== '') it.wholesalePriceUSD = Number(it.wholesalePriceUSD)
+        else it.wholesalePriceUSD = undefined
+      }
+    } else {
+      if (createProductDto.price === undefined) {
+        throw new BadRequestException('Preço é obrigatório quando não há variações por combinação');
+      }
+      if (createProductDto.stock === undefined) {
+        throw new BadRequestException('Estoque é obrigatório quando não há variações por combinação');
       }
     }
     
@@ -180,23 +212,27 @@ export class ProductController {
       updateProductDto.category = updateProductDto.category.trim();
     }
     
-    // Processar variações se for string
+    // Processar arrays (variations legacy, variationAxes e variantItems)
     if (files?.images?.length) {
       files.images.forEach((file) => {
         file.filename = generateUniqueFilename(file.originalname)
       })
     }
 
-    if (updateProductDto.variations && typeof updateProductDto.variations === 'string') {
+    const parseMaybeJsonU = (value: any) => {
+      if (typeof value !== 'string') return value
       try {
-        updateProductDto.variations = JSON.parse(updateProductDto.variations);
-      } catch (e) {
-        updateProductDto.variations = [];
+        return JSON.parse(value)
+      } catch {
+        return undefined
       }
     }
+    updateProductDto.variations = parseMaybeJsonU(updateProductDto.variations) ?? updateProductDto.variations ?? []
+    updateProductDto.variationAxes = parseMaybeJsonU(updateProductDto.variationAxes) ?? updateProductDto.variationAxes ?? updateProductDto.variations ?? []
+    updateProductDto.variantItems = parseMaybeJsonU(updateProductDto.variantItems) ?? updateProductDto.variantItems ?? []
     
     // Converter campos numéricos
-    if (updateProductDto.price !== undefined) {
+    if (updateProductDto.price !== undefined && updateProductDto.price !== '') {
       updateProductDto.price = Number(updateProductDto.price);
       if (isNaN(updateProductDto.price) || updateProductDto.price < 0) {
         throw new BadRequestException('Preço deve ser um número válido maior ou igual a zero');
@@ -230,10 +266,37 @@ export class ProductController {
       updateProductDto.wholesalePriceUSD = undefined;
     }
     
-    if (updateProductDto.stock !== undefined) {
+    if (updateProductDto.stock !== undefined && updateProductDto.stock !== '') {
       updateProductDto.stock = Number(updateProductDto.stock);
       if (isNaN(updateProductDto.stock) || updateProductDto.stock < 0) {
         throw new BadRequestException('Estoque deve ser um número válido maior ou igual a zero');
+      }
+    }
+
+    const hasVariantItemsU = Array.isArray(updateProductDto.variantItems) && updateProductDto.variantItems.length > 0
+    if (hasVariantItemsU) {
+      for (const it of updateProductDto.variantItems) {
+        if (it.price === undefined || it.price === null || isNaN(Number(it.price)) || Number(it.price) < 0) {
+          throw new BadRequestException('Cada combinação deve ter preço válido >= 0')
+        }
+        if (it.stock === undefined || it.stock === null || isNaN(Number(it.stock)) || Number(it.stock) < 0) {
+          throw new BadRequestException('Cada combinação deve ter estoque válido >= 0')
+        }
+        it.price = Number(it.price)
+        it.stock = Number(it.stock)
+        if (it.wholesalePrice !== undefined && it.wholesalePrice !== '') it.wholesalePrice = Number(it.wholesalePrice)
+        else it.wholesalePrice = undefined
+        if (it.priceUSD !== undefined && it.priceUSD !== '') it.priceUSD = Number(it.priceUSD)
+        else it.priceUSD = undefined
+        if (it.wholesalePriceUSD !== undefined && it.wholesalePriceUSD !== '') it.wholesalePriceUSD = Number(it.wholesalePriceUSD)
+        else it.wholesalePriceUSD = undefined
+      }
+    } else {
+      if (updateProductDto.price === undefined) {
+        throw new BadRequestException('Preço é obrigatório quando não há variações por combinação');
+      }
+      if (updateProductDto.stock === undefined) {
+        throw new BadRequestException('Estoque é obrigatório quando não há variações por combinação');
       }
     }
     

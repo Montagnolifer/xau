@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional, IsBoolean, IsArray, ValidateNested, Min, IsNotEmpty } from 'class-validator'
+import { IsString, IsNumber, IsOptional, IsBoolean, IsArray, ValidateNested, Min, IsNotEmpty, IsObject } from 'class-validator'
 import { Type, Transform } from 'class-transformer'
 
 class CreateProductVariationDto {
@@ -11,6 +11,61 @@ class CreateProductVariationDto {
   options: string[]
 }
 
+class CreateProductVariantItemDto {
+  @IsObject()
+  options: Record<string, string>
+
+  @IsOptional()
+  @IsString()
+  sku?: string
+
+  @IsNumber()
+  @Min(0)
+  @Transform(({ value }) => {
+    const num = Number(value)
+    return isNaN(num) ? 0 : num
+  })
+  price: number
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Transform(({ value }) => {
+    if (!value || value === '') return undefined
+    const num = Number(value)
+    return isNaN(num) ? undefined : num
+  })
+  wholesalePrice?: number
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Transform(({ value }) => {
+    if (!value || value === '') return undefined
+    const num = Number(value)
+    return isNaN(num) ? undefined : num
+  })
+  priceUSD?: number
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Transform(({ value }) => {
+    if (!value || value === '') return undefined
+    const num = Number(value)
+    return isNaN(num) ? undefined : num
+  })
+  wholesalePriceUSD?: number
+
+  @IsNumber()
+  @Min(0)
+  @Transform(({ value }) => {
+    const num = Number(value)
+    return isNaN(num) ? 0 : num
+  })
+  stock: number
+}
+
 export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
@@ -20,13 +75,15 @@ export class CreateProductDto {
   @IsString()
   description?: string
 
+  @IsOptional()
   @IsNumber()
   @Min(0)
   @Transform(({ value }) => {
+    if (value === undefined || value === '') return undefined
     const num = Number(value)
-    return isNaN(num) ? 0 : num
+    return isNaN(num) ? undefined : num
   })
-  price: number
+  price?: number
 
   @IsOptional()
   @IsNumber()
@@ -71,13 +128,15 @@ export class CreateProductDto {
   })
   categoryId?: number
 
+  @IsOptional()
   @IsNumber()
   @Min(0)
   @Transform(({ value }) => {
+    if (value === undefined || value === '') return undefined
     const num = Number(value)
-    return isNaN(num) ? 0 : num
+    return isNaN(num) ? undefined : num
   })
-  stock: number
+  stock?: number
 
   @IsOptional()
   @IsBoolean()
@@ -120,8 +179,21 @@ export class CreateProductDto {
   @IsString({ each: true })
   images?: string[]
 
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateProductVariationDto)
-  variations: CreateProductVariationDto[]
+  variations?: CreateProductVariationDto[]
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateProductVariationDto)
+  variationAxes?: CreateProductVariationDto[]
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateProductVariantItemDto)
+  variantItems?: CreateProductVariantItemDto[]
 } 

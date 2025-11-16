@@ -8,6 +8,7 @@ import {
   RelationId,
 } from 'typeorm'
 import { ProductVariation } from './product-variation.entity'
+import { ProductVariantItem } from './product-variant-item.entity'
 import { Category } from '../../category/entities/category.entity'
 
 @Entity('products')
@@ -72,4 +73,7 @@ export class Product {
 
   @Column('jsonb', { default: () => "'[]'" })
   images: string[]
+
+  @OneToMany(() => ProductVariantItem, (item) => item.product, { cascade: true })
+  variantItems: ProductVariantItem[]
 } 
