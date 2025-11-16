@@ -235,6 +235,7 @@ export class ProductService {
       weight: updateProductDto.weight,
       dimensions: updateProductDto.dimensions,
       youtubeUrl: updateProductDto.youtubeUrl,
+      paymentLink: updateProductDto.paymentLink,
     })
 
     if (updateProductDto.categoryId !== undefined) {

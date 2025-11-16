@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, Crown, TrendingUp, Package, Lock, X, Star, Play } from "lucide-react"
+import { ChevronLeft, ChevronRight, Crown, TrendingUp, Package, Lock, X, Star, Play, Zap } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
@@ -249,9 +249,25 @@ export default function ProductWholesaleCard({ product }: ProductWholesaleCardPr
 
             {/* CTA */}
             <div>
-              {isAuthenticated && (
-                // Seletor de variações quando logado
-                <ProductVariationSelector product={product} />
+              {product.paymentLink ? (
+                <Button
+                  asChild
+                  className="w-full bg-gradient-to-r from-brand-primary to-brand-secondary text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 hover:brightness-110"
+                >
+                  <a
+                    href={product.paymentLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Zap className="h-4 w-4 mr-2" />
+                    Comprar agora
+                  </a>
+                </Button>
+              ) : (
+                isAuthenticated && (
+                  // Seletor de variações quando logado
+                  <ProductVariationSelector product={product} />
+                )
               )}
             </div>
           </CardContent>

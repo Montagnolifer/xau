@@ -172,6 +172,10 @@ export class CreateProductDto {
 
   @IsOptional()
   @IsString()
+  paymentLink?: string
+
+  @IsOptional()
+  @IsString()
   mercadoLivreId?: string
 
   @IsOptional()

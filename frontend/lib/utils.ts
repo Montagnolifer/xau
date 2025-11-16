@@ -117,6 +117,7 @@ export function transformBackendProduct(backendProduct: any): Product {
     weight: backendProduct.weight,
     dimensions: backendProduct.dimensions,
     youtubeUrl: backendProduct.youtubeUrl,
+    paymentLink: backendProduct.paymentLink || undefined,
     variations: backendProduct.variations,
     isFavorite: backendProduct.isFavorite || false
   }

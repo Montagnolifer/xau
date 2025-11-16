@@ -335,6 +335,8 @@ export default function NewProductPage() {
     weight: "",
     dimensions: "",
     youtubeUrl: "",
+    isLinkProduct: false,
+    paymentLink: "",
   })
   const [images, setImages] = useState<Array<{ id: string; file: File; preview: string; isMain?: boolean }>>([])
   const [existingImages, setExistingImages] = useState<string[]>([])
@@ -478,6 +480,8 @@ export default function NewProductPage() {
             weight: product.weight?.toString() || "",
             dimensions: product.dimensions || "",
             youtubeUrl: product.youtubeUrl || "",
+            isLinkProduct: Boolean(product.paymentLink),
+            paymentLink: product.paymentLink || "",
           })
           
           if (product.variations) {
@@ -658,6 +662,16 @@ export default function NewProductPage() {
     data.append("weight", formData.weight || "");
     data.append("dimensions", formData.dimensions || "");
     data.append("youtubeUrl", formData.youtubeUrl || "");
+    if (formData.isLinkProduct) {
+      if (!formData.paymentLink.trim()) {
+        alert("Informe o link de pagamento ou desative a opção de produto de link.");
+        setIsLoading(false);
+        return;
+      }
+      data.append("paymentLink", formData.paymentLink.trim());
+    } else {
+      data.append("paymentLink", "");
+    }
     // Enviar eixos (retrocompat: também mantém 'variations')
     data.append("variations", JSON.stringify(variations));
     data.append("variationAxes", JSON.stringify(variations));
@@ -835,6 +849,24 @@ export default function NewProductPage() {
                   <p className="text-xs text-slate-500 mt-1">
                     Cole o link completo do vídeo no YouTube para demonstração do produto
                   </p>
+                  {formData.isLinkProduct && (
+                    <div className="pt-4">
+                      <Label htmlFor="paymentLink" className="text-slate-700 font-medium">
+                        Link de Pagamento
+                      </Label>
+                      <Input
+                        id="paymentLink"
+                        type="url"
+                        placeholder="https://..."
+                        className="mt-2 border-slate-300 focus:border-indigo-500 focus:ring-indigo-500"
+                        value={formData.paymentLink}
+                        onChange={(e) => handleInputChange("paymentLink", e.target.value)}
+                      />
+                      <p className="text-xs text-slate-500 mt-1">
+                        Informe o link completo de pagamento (ex: link do Mercado Pago, link de checkout, etc.)
+                      </p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
               )}
@@ -1180,6 +1212,26 @@ export default function NewProductPage() {
                     checked={formData.status}
                     onCheckedChange={(checked) => handleInputChange("status", checked)}
                   />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="isLinkProduct" className="text-slate-700 font-medium">
+                        Produto de Link de Pagamento
+                      </Label>
+                      <p className="text-sm text-slate-500 mt-1">
+                        {formData.isLinkProduct
+                          ? "Este produto usará um link externo de pagamento"
+                          : "Pagamento normal pelo carrinho da loja"}
+                      </p>
+                    </div>
+                    <Switch
+                      id="isLinkProduct"
+                      checked={formData.isLinkProduct}
+                      onCheckedChange={(checked) => handleInputChange("isLinkProduct", checked)}
+                    />
+                  </div>
+                  
                 </div>
               </CardContent>
             </Card>

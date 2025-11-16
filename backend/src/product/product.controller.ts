@@ -155,6 +155,14 @@ export class ProductController {
     } else {
       createProductDto.weight = undefined;
     }
+
+    // Normalizar link de pagamento
+    if (typeof createProductDto.paymentLink === 'string') {
+      createProductDto.paymentLink = createProductDto.paymentLink.trim();
+      if (createProductDto.paymentLink === '') {
+        createProductDto.paymentLink = undefined;
+      }
+    }
     
     // Converter status
     if (createProductDto.status !== undefined) {
@@ -307,6 +315,14 @@ export class ProductController {
       }
     } else {
       updateProductDto.weight = undefined;
+    }
+
+    // Normalizar link de pagamento
+    if (typeof updateProductDto.paymentLink === 'string') {
+      updateProductDto.paymentLink = updateProductDto.paymentLink.trim();
+      if (updateProductDto.paymentLink === '') {
+        updateProductDto.paymentLink = undefined;
+      }
     }
     
     // Converter status

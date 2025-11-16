@@ -34,6 +34,7 @@ export interface Product {
   weight?: number
   dimensions?: string
   youtubeUrl?: string
+  paymentLink?: string
   variations?: ProductVariation[]
   isFavorite?: boolean
 }

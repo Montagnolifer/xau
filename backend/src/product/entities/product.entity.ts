@@ -62,6 +62,9 @@ export class Product {
   @Column({ nullable: true })
   youtubeUrl: string
 
+  @Column({ name: 'payment_link', type: 'varchar', length: 255, nullable: true })
+  paymentLink: string | null
+
   @Column({ default: false })
   isFavorite: boolean
 
