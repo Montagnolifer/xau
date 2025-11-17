@@ -147,6 +147,7 @@ export default function MarketplacesPage() {
   const [importAccount, setImportAccount] = useState<MarketplaceAccount | null>(null)
   const { toast } = useToast()
   const mlStatus = searchParams.get("ml_status")
+  const shopeeStatus = searchParams.get("shopee_status")
 
   const fetchAccounts = useCallback(async () => {
     try {
@@ -180,8 +181,15 @@ export default function MarketplacesPage() {
       )
       setConnectingProvider(null)
       router.replace("/admin/preferences/marketplaces", { scroll: false })
+    } else if (shopeeStatus === "success") {
+      processedParamsRef.current = true
+      setSuccessMessage(
+        "Integração com a Shopee concluída com sucesso! A partir de agora você pode acompanhar tudo por aqui.",
+      )
+      setConnectingProvider(null)
+      router.replace("/admin/preferences/marketplaces", { scroll: false })
     }
-  }, [mlStatus, router])
+  }, [mlStatus, shopeeStatus, router])
 
   const handleMercadoLivreConnection = useCallback(async () => {
     try {
@@ -198,17 +206,39 @@ export default function MarketplacesPage() {
     }
   }, [])
 
+  const handleShopeeConnection = useCallback(async () => {
+    try {
+      setConnectingProvider("shopee")
+      setErrorMessage(null)
+      const { authorizationUrl } = await marketplacesApi.authorizeShopee()
+      window.location.href = authorizationUrl
+    } catch (error) {
+      console.error("Erro ao iniciar conexão Shopee:", error)
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Não foi possível iniciar a autenticação com a Shopee."
+      setErrorMessage(errorMessage)
+      setConnectingProvider(null)
+      
+      toast({
+        title: "Erro ao conectar com Shopee",
+        description: errorMessage,
+        variant: "destructive",
+      })
+    }
+  }, [toast])
+
   const handleImportProductsClick = useCallback(
     (account: MarketplaceAccount) => {
       if (!account) {
         return
       }
 
-      if (account.provider !== "mercado_livre") {
+      if (account.provider !== "mercado_livre" && account.provider !== "shopee") {
         toast({
           title: "Importação indisponível",
           description:
-            "A importação de catálogo está disponível apenas para contas Mercado Livre neste momento.",
+            "A importação de catálogo está disponível apenas para contas Mercado Livre e Shopee.",
         })
         return
       }
@@ -507,15 +537,27 @@ export default function MarketplacesPage() {
               )}
 
               <Button
-                onClick={() =>
-                  router.push(
-                    `/admin/preferences/marketplaces/${shopeeMarketplace.id}`,
-                  )
-                }
+                disabled={connectingProvider === "shopee"}
+                onClick={() => {
+                  if (shopeeMarketplace.provider === "shopee") {
+                    void handleShopeeConnection()
+                  } else {
+                    router.push(
+                      `/admin/preferences/marketplaces/${shopeeMarketplace.id}`,
+                    )
+                  }
+                }}
               >
-                {shopeeMarketplace.accounts.length
-                  ? "Adicionar conta Shopee"
-                  : "Conectar agora"}
+                {connectingProvider === "shopee" ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Conectando...
+                  </span>
+                ) : shopeeMarketplace.accounts.length ? (
+                  "Adicionar conta Shopee"
+                ) : (
+                  "Conectar agora"
+                )}
               </Button>
             </CardContent>
           </Card>

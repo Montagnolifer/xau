@@ -415,4 +415,11 @@ export class ProductService {
       relations: ['variations', 'categoryEntity'],
     })
   }
+
+  async findByShopeeId(shopeeId: string): Promise<Product | null> {
+    return this.productRepository.findOne({
+      where: { shopeeId },
+      relations: ['variations', 'categoryEntity'],
+    })
+  }
 }

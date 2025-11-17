@@ -6,6 +6,10 @@ import {
   importMlApi,
   type ImportMarketplaceProductsPayload,
 } from "@/lib/api/import-ml"
+import {
+  importShopeeApi,
+  type ImportMarketplaceProductsPayload as ShopeeImportPayload,
+} from "@/lib/api/shopee/import-shopee"
 import { categoriesApi } from "@/lib/api"
 import type { CategoryFlatNode } from "@/types/category"
 import { useToast } from "@/hooks/use-toast"
@@ -13,6 +17,10 @@ import {
   mapMercadoLivreProductsResponse,
   type MercadoLivreProductRow,
 } from "@/lib/importers/ml-mapper"
+import {
+  mapShopeeProductsResponse,
+  type ShopeeProductRow,
+} from "@/lib/importers/shopee-mapper"
 
 type UseImportProductsDialogParams = {
   open: boolean
@@ -20,9 +28,11 @@ type UseImportProductsDialogParams = {
   onSuccess?: (imported: number) => void
 }
 
+type ProductRow = MercadoLivreProductRow | ShopeeProductRow
+
 type ImportProductsState = {
-  products: MercadoLivreProductRow[]
-  filteredProducts: MercadoLivreProductRow[]
+  products: ProductRow[]
+  filteredProducts: ProductRow[]
   loadingProducts: boolean
   importing: boolean
   searchTerm: string
@@ -81,7 +91,7 @@ export function useImportProductsDialog({
   }, [toast])
 
   const fetchProducts = useCallback(async () => {
-    if (!account || account.provider !== "mercado_livre") {
+    if (!account || (account.provider !== "mercado_livre" && account.provider !== "shopee")) {
       return
     }
 
@@ -92,19 +102,28 @@ export function useImportProductsDialog({
     }))
 
     try {
-      const response = await importMlApi.listProducts(account.id)
-      setState((prev) => {
-        const products = mapMercadoLivreProductsResponse(response)
-        return {
-          ...prev,
-          products,
-          filteredProducts: products,
-          loadingProducts: false,
-          fetchedAt: response.fetchedAt,
-          selectedIds: new Set<string>(),
-          searchTerm: "",
-        }
-      })
+      let products: ProductRow[]
+      let fetchedAt: string
+
+      if (account.provider === "mercado_livre") {
+        const response = await importMlApi.listProducts(account.id)
+        products = mapMercadoLivreProductsResponse(response)
+        fetchedAt = response.fetchedAt
+      } else {
+        const response = await importShopeeApi.listProducts(account.id)
+        products = mapShopeeProductsResponse(response)
+        fetchedAt = response.fetchedAt
+      }
+
+      setState((prev) => ({
+        ...prev,
+        products,
+        filteredProducts: products,
+        loadingProducts: false,
+        fetchedAt,
+        selectedIds: new Set<string>(),
+        searchTerm: "",
+      }))
     } catch (error) {
       console.error("Erro ao listar produtos do marketplace:", error)
       setState((prev) => ({
@@ -126,7 +145,7 @@ export function useImportProductsDialog({
       console.error("Erro carregando categorias:", error),
     )
 
-    if (account?.provider === "mercado_livre") {
+    if (account?.provider === "mercado_livre" || account?.provider === "shopee") {
       fetchProducts().catch((error) =>
         console.error("Erro carregando produtos do marketplace:", error),
       )
@@ -229,19 +248,28 @@ export function useImportProductsDialog({
         (category) => String(category.id) === state.categoryId,
       )?.name ?? null
 
-    const payload: ImportMarketplaceProductsPayload = {
-      productIds: selectedIds,
-      categoryId,
-      categoryName,
-    }
-
     setState((prev) => ({
       ...prev,
       importing: true,
     }))
 
     try {
-      const response = await importMlApi.importProducts(account.id, payload)
+      let response
+      if (account.provider === "mercado_livre") {
+        const payload: ImportMarketplaceProductsPayload = {
+          productIds: selectedIds,
+          categoryId,
+          categoryName,
+        }
+        response = await importMlApi.importProducts(account.id, payload)
+      } else {
+        const payload: ShopeeImportPayload = {
+          productIds: selectedIds,
+          categoryId,
+          categoryName,
+        }
+        response = await importShopeeApi.importProducts(account.id, payload)
+      }
       toast({
         title: "Importação concluída",
         description:

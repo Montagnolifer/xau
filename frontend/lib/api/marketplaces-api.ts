@@ -1,5 +1,6 @@
 import { BaseApiClient } from './base-client'
 import { config } from '../config'
+import { shopeeApi } from './shopee/shopee-api'
 
 export type MarketplaceAccount = {
   id: number
@@ -40,6 +41,10 @@ class MarketplacesApi extends BaseApiClient {
         method: 'POST',
       },
     )
+  }
+
+  async authorizeShopee(): Promise<AuthorizationResponse> {
+    return shopeeApi.authorizeShopee()
   }
 }
 

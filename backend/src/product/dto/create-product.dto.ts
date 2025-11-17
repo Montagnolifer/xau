@@ -179,6 +179,10 @@ export class CreateProductDto {
   mercadoLivreId?: string
 
   @IsOptional()
+  @IsString()
+  shopeeId?: string
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   images?: string[]

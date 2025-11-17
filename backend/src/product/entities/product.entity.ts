@@ -71,6 +71,9 @@ export class Product {
   @Column({ name: 'mercado_livre_id', type: 'varchar', length: 255, nullable: true })
   mercadoLivreId: string | null
 
+  @Column({ name: 'shopee_id', type: 'varchar', length: 255, nullable: true })
+  shopeeId: string | null
+
   @OneToMany(() => ProductVariation, (variation) => variation.product, { cascade: true })
   variations: ProductVariation[]
 

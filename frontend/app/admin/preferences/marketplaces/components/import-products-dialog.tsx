@@ -46,7 +46,7 @@ export function ImportProductsDialog({
     },
   })
 
-  const providerSupported = account?.provider === "mercado_livre"
+  const providerSupported = account?.provider === "mercado_livre" || account?.provider === "shopee"
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -69,7 +69,7 @@ export function ImportProductsDialog({
           <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-6 text-amber-700">
             <AlertCircle className="h-5 w-5" />
             <p>
-              A importação de catálogo está disponível apenas para o Mercado Livre no momento.
+              A importação de catálogo está disponível apenas para Mercado Livre e Shopee.
               Selecione uma conta compatível.
             </p>
           </div>

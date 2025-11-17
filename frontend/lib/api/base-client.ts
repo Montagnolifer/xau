@@ -31,8 +31,14 @@ export class BaseApiClient {
       const response = await fetch(url, config);
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch {
+          // Se não conseguir fazer parse do JSON, usar a mensagem padrão
+        }
+        throw new Error(errorMessage);
       }
 
       // Se a resposta for 204 No Content, não tentar fazer parse do JSON
@@ -93,8 +99,14 @@ export class BaseApiClient {
       const response = await fetch(url, config);
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch {
+          // Se não conseguir fazer parse do JSON, usar a mensagem padrão
+        }
+        throw new Error(errorMessage);
       }
 
       // Se a resposta for 204 No Content ou 200 sem conteúdo, retornar undefined
