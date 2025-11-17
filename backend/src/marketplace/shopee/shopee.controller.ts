@@ -24,18 +24,27 @@ export class ShopeeController {
     @Query('code') code: string | undefined,
     @Query('shop_id') shopId: string | undefined,
     @Query('state') state: string | undefined,
-    @Res() res: Response,
+    @Res({ passthrough: false }) res: Response,
   ) {
+    console.log('Shopee callback recebido:', { code: code ? 'presente' : 'ausente', shopId, state })
+    
+    // Desabilitar o interceptor de exceções para esta rota, garantindo HTML
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    
     try {
       await this.shopeeService.handleCallback(code, shopId, state)
       const redirectUrl =
         this.shopeeService.getSuccessRedirectUrl() ??
         this.shopeeService.getDefaultSuccessRedirectUrl()
 
+      console.log('Redirecionando para:', redirectUrl)
       return res.redirect(302, redirectUrl)
     } catch (error) {
+      console.error('Erro no callback Shopee:', error)
+      
       const redirectUrl = this.shopeeService.getErrorRedirectUrl()
       if (redirectUrl) {
+        console.log('Redirecionando para URL de erro:', redirectUrl)
         return res.redirect(302, redirectUrl)
       }
 
@@ -44,10 +53,11 @@ export class ShopeeController {
           ? error.message
           : 'Não foi possível concluir a autenticação com a Shopee.'
 
+      // Garantir que retorna HTML válido, ignorando o interceptor
       return res
         .status(400)
         .send(
-          `<html><body><p>Falha na autenticação com a Shopee: ${message}</p></body></html>`,
+          `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Erro de Autenticação</title></head><body><h1>Falha na autenticação com a Shopee</h1><p>${message}</p><script>setTimeout(function(){window.location.href="${this.shopeeService.getDefaultSuccessRedirectUrl()}";},3000);</script></body></html>`,
         )
     }
   }
