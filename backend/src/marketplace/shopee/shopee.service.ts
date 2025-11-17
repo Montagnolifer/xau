@@ -202,6 +202,9 @@ export class ShopeeService {
       const timestamp = Math.floor(Date.now() / 1000)
       const redirect = this.redirectUri
 
+      // Log da URL de redirect sendo usada
+      this.logger.log('Gerando URL de autorização com redirect:', redirect)
+
       // Shopee requer assinatura HMAC para autorização
       const baseString = `${this.partnerId}${redirect}${timestamp}`
       const sign = createHmac('sha256', this.partnerKey)
@@ -217,7 +220,7 @@ export class ShopeeService {
 
       const authorizationUrl = `${this.authorizeUrl}?${queryParams.toString()}`
       
-      this.logger.log('URL de autorização Shopee gerada com sucesso')
+      this.logger.log('URL de autorização Shopee gerada:', authorizationUrl)
       return { authorizationUrl, state }
     } catch (error) {
       this.logger.error('Erro ao gerar URL de autorização Shopee:', error)
