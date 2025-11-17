@@ -1014,179 +1014,181 @@ export default function NewProductPage() {
             </Card>*/}
 
             {/* Product Variations */}
-            <Card className="border-0 shadow-lg shadow-slate-200/50">
-              <CardHeader className="pb-4 grid grid-cols-[1fr_auto] items-center">
-                <div>
-                  <CardTitle className="text-slate-900">Variações do Produto</CardTitle>
-                  <CardDescription>Configure diferentes opções como cor, tamanho, etc.</CardDescription>
-                </div>
-                <Button type="button" variant="ghost" size="sm" onClick={() => setIsVariationsOpen(v => !v)} className="text-slate-600 ml-2">
-                  <ChevronDown className={"h-4 w-4 transition-transform " + (isVariationsOpen ? "rotate-180" : "")} />
-                </Button>
-              </CardHeader>
-              {isVariationsOpen && (
-              <CardContent className="space-y-6">
-                {variations.map((variation, variationIndex) => (
-                  <div key={variationIndex} className="p-4 border border-slate-200 rounded-xl space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium text-slate-900">Variação {variationIndex + 1}</h4>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeVariation(variationIndex)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    <div>
-                      <Label htmlFor={`variation-name-${variationIndex}`}>Nome da Variação *</Label>
-                      <Input
-                        id={`variation-name-${variationIndex}`}
-                        placeholder="Ex: Cor, Tamanho, Material"
-                        value={variation.name}
-                        onChange={(e) => updateVariationName(variationIndex, e.target.value)}
-                        className="mt-2"
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Opções da Variação</Label>
-                      <div className="mt-2 space-y-2">
-                        {variation.options.map((option, optionIndex) => (
-                          <div key={optionIndex} className="flex items-center space-x-2">
-                            <Input
-                              placeholder="Ex: Azul, Vermelho, P, M, G"
-                              value={option}
-                              onChange={(e) => updateVariationOption(variationIndex, optionIndex, e.target.value)}
-                              className="flex-1"
-                            />
-                            {variation.options.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => removeVariationOption(variationIndex, optionIndex)}
-                                className="text-red-600"
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        ))}
+            {!formData.isLinkProduct && (
+              <Card className="border-0 shadow-lg shadow-slate-200/50">
+                <CardHeader className="pb-4 grid grid-cols-[1fr_auto] items-center">
+                  <div>
+                    <CardTitle className="text-slate-900">Variações do Produto</CardTitle>
+                    <CardDescription>Configure diferentes opções como cor, tamanho, etc.</CardDescription>
+                  </div>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setIsVariationsOpen(v => !v)} className="text-slate-600 ml-2">
+                    <ChevronDown className={"h-4 w-4 transition-transform " + (isVariationsOpen ? "rotate-180" : "")} />
+                  </Button>
+                </CardHeader>
+                {isVariationsOpen && (
+                <CardContent className="space-y-6">
+                  {variations.map((variation, variationIndex) => (
+                    <div key={variationIndex} className="p-4 border border-slate-200 rounded-xl space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-medium text-slate-900">Variação {variationIndex + 1}</h4>
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => addVariationOption(variationIndex)}
-                          className="w-full"
+                          onClick={() => removeVariation(variationIndex)}
+                          className="text-red-600 hover:text-red-700"
                         >
-                          <Plus className="mr-2 h-4 w-4" />
-                          Adicionar Opção
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
-                    </div>
-                  </div>
-                ))}
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addVariation}
-                  className="w-full border-dashed border-2 border-slate-300 hover:border-indigo-400 hover:bg-indigo-50"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Adicionar Variação
-                </Button>
-                {hasVariations && variantItems.length > 0 && (
-                  <div className="space-y-3 pt-2">
-                    <h4 className="font-medium text-slate-900">Combinações</h4>
-                    <div className="rounded-lg border border-slate-200">
-                      <div className="grid grid-cols-1 md:grid-cols-8 gap-3 p-3 bg-slate-50 text-xs font-medium text-slate-600">
-                        <div className="md:col-span-2">Opções</div>
-                        <div>SKU</div>
-                        <div>Preço</div>
-                        <div>Atacado</div>
-                        <div>USD</div>
-                        <div>Atacado USD</div>
-                        <div>Estoque</div>
+                      <div>
+                        <Label htmlFor={`variation-name-${variationIndex}`}>Nome da Variação *</Label>
+                        <Input
+                          id={`variation-name-${variationIndex}`}
+                          placeholder="Ex: Cor, Tamanho, Material"
+                          value={variation.name}
+                          onChange={(e) => updateVariationName(variationIndex, e.target.value)}
+                          className="mt-2"
+                        />
                       </div>
-                      <div className="divide-y divide-slate-200">
-                        {variantItems.map((item, idx) => {
-                          const optionsLabel = Object.entries(item.options)
-                            .map(([k, v]) => `${k}: ${v}`)
-                            .join(' • ')
-                          const onChangeItem = (key: keyof typeof item, value: any) => {
-                            setVariantItems((prev) => {
-                              const clone = [...prev]
-                              clone[idx] = { ...(clone[idx] || item), [key]: value }
-                              return clone
-                            })
-                          }
-                          return (
-                            <div key={item.id} className="grid grid-cols-1 md:grid-cols-8 gap-3 p-3 items-center">
-                              <div className="md:col-span-2 text-sm text-slate-700">{optionsLabel}</div>
-                              <div>
-                                <Input
-                                  value={item.sku || ''}
-                                  onChange={(e) => onChangeItem('sku', e.target.value)}
-                                  placeholder="SKU"
-                                  className="h-9"
-                                />
-                              </div>
-                              <div>
-                                <Input
-                                  value={item.price}
-                                  onChange={(e) => onChangeItem('price', e.target.value)}
-                                  placeholder="0,00"
-                                  className="h-9"
-                                />
-                              </div>
-                              <div>
-                                <Input
-                                  value={item.wholesalePrice || ''}
-                                  onChange={(e) => onChangeItem('wholesalePrice', e.target.value)}
-                                  placeholder="0,00"
-                                  className="h-9"
-                                />
-                              </div>
-                              <div>
-                                <Input
-                                  value={item.priceUSD || ''}
-                                  onChange={(e) => onChangeItem('priceUSD', e.target.value)}
-                                  placeholder="0.00"
-                                  className="h-9"
-                                />
-                              </div>
-                              <div>
-                                <Input
-                                  value={item.wholesalePriceUSD || ''}
-                                  onChange={(e) => onChangeItem('wholesalePriceUSD', e.target.value)}
-                                  placeholder="0.00"
-                                  className="h-9"
-                                />
-                              </div>
-                              <div>
-                                <Input
-                                  type="number"
-                                  value={item.stock}
-                                  onChange={(e) => onChangeItem('stock', e.target.value)}
-                                  placeholder="0"
-                                  className="h-9"
-                                />
-                              </div>
+
+                      <div>
+                        <Label>Opções da Variação</Label>
+                        <div className="mt-2 space-y-2">
+                          {variation.options.map((option, optionIndex) => (
+                            <div key={optionIndex} className="flex items-center space-x-2">
+                              <Input
+                                placeholder="Ex: Azul, Vermelho, P, M, G"
+                                value={option}
+                                onChange={(e) => updateVariationOption(variationIndex, optionIndex, e.target.value)}
+                                className="flex-1"
+                              />
+                              {variation.options.length > 1 && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => removeVariationOption(variationIndex, optionIndex)}
+                                  className="text-red-600"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              )}
                             </div>
-                          )
-                        })}
+                          ))}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => addVariationOption(variationIndex)}
+                            className="w-full"
+                          >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Adicionar Opção
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ))}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addVariation}
+                    className="w-full border-dashed border-2 border-slate-300 hover:border-indigo-400 hover:bg-indigo-50"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Adicionar Variação
+                  </Button>
+                  {hasVariations && variantItems.length > 0 && (
+                    <div className="space-y-3 pt-2">
+                      <h4 className="font-medium text-slate-900">Combinações</h4>
+                      <div className="rounded-lg border border-slate-200">
+                        <div className="grid grid-cols-1 md:grid-cols-8 gap-3 p-3 bg-slate-50 text-xs font-medium text-slate-600">
+                          <div className="md:col-span-2">Opções</div>
+                          <div>SKU</div>
+                          <div>Preço</div>
+                          <div>Atacado</div>
+                          <div>USD</div>
+                          <div>Atacado USD</div>
+                          <div>Estoque</div>
+                        </div>
+                        <div className="divide-y divide-slate-200">
+                          {variantItems.map((item, idx) => {
+                            const optionsLabel = Object.entries(item.options)
+                              .map(([k, v]) => `${k}: ${v}`)
+                              .join(' • ')
+                            const onChangeItem = (key: keyof typeof item, value: any) => {
+                              setVariantItems((prev) => {
+                                const clone = [...prev]
+                                clone[idx] = { ...(clone[idx] || item), [key]: value }
+                                return clone
+                              })
+                            }
+                            return (
+                              <div key={item.id} className="grid grid-cols-1 md:grid-cols-8 gap-3 p-3 items-center">
+                                <div className="md:col-span-2 text-sm text-slate-700">{optionsLabel}</div>
+                                <div>
+                                  <Input
+                                    value={item.sku || ''}
+                                    onChange={(e) => onChangeItem('sku', e.target.value)}
+                                    placeholder="SKU"
+                                    className="h-9"
+                                  />
+                                </div>
+                                <div>
+                                  <Input
+                                    value={item.price}
+                                    onChange={(e) => onChangeItem('price', e.target.value)}
+                                    placeholder="0,00"
+                                    className="h-9"
+                                  />
+                                </div>
+                                <div>
+                                  <Input
+                                    value={item.wholesalePrice || ''}
+                                    onChange={(e) => onChangeItem('wholesalePrice', e.target.value)}
+                                    placeholder="0,00"
+                                    className="h-9"
+                                  />
+                                </div>
+                                <div>
+                                  <Input
+                                    value={item.priceUSD || ''}
+                                    onChange={(e) => onChangeItem('priceUSD', e.target.value)}
+                                    placeholder="0.00"
+                                    className="h-9"
+                                  />
+                                </div>
+                                <div>
+                                  <Input
+                                    value={item.wholesalePriceUSD || ''}
+                                    onChange={(e) => onChangeItem('wholesalePriceUSD', e.target.value)}
+                                    placeholder="0.00"
+                                    className="h-9"
+                                  />
+                                </div>
+                                <div>
+                                  <Input
+                                    type="number"
+                                    value={item.stock}
+                                    onChange={(e) => onChangeItem('stock', e.target.value)}
+                                    placeholder="0"
+                                    className="h-9"
+                                  />
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
                 )}
-              </CardContent>
-              )}
-            </Card>
+              </Card>
+            )}
           </div>
 
           {/* Sidebar */}

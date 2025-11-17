@@ -4,3 +4,4 @@ ALTER TABLE products
 ADD COLUMN IF NOT EXISTS payment_link VARCHAR(255) NULL;
 
 
+

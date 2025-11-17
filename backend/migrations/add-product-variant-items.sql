@@ -16,3 +16,4 @@ CREATE INDEX IF NOT EXISTS idx_product_variant_items_options ON product_variant_
 CREATE UNIQUE INDEX IF NOT EXISTS uq_product_variant_items_product_options ON product_variant_items (product_id, options);
 
 
+
