@@ -31,6 +31,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { apiClient } from "@/lib/api"
 import { config } from "@/lib/config"
 import { useToast } from "@/hooks/use-toast"
@@ -84,6 +91,9 @@ export default function ProductsPage() {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [importDialogOpen, setImportDialogOpen] = useState(false)
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all")
+  const [categoryFilter, setCategoryFilter] = useState<string>("all")
+  const [availableCategories, setAvailableCategories] = useState<string[]>([])
   const { toast } = useToast()
 
   const loadProducts = async () => {
@@ -91,22 +101,31 @@ export default function ProductsPage() {
     setError(null)
     try {
       const data = await apiClient.getProducts()
-      setProducts(
-        data.map((p: any) => ({
-          id: p.id,
-          name: p.name,
-          price: p.price,
-          wholesalePrice: p.wholesalePrice,
-          category: p.category,
-          stock: p.stock,
-          status: p.status ? "active" : "inactive",
-          image: resolveProductImage(p),
-          sales: p.sales || 0,
-          trend: "stable", // ou lógica para trend se houver
-          isFavorite: p.isFavorite || false,
-          mercadoLivreId: p.mercadoLivreId || null,
-        }))
-      )
+      const mappedProducts: Product[] = data.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        wholesalePrice: p.wholesalePrice,
+        category: p.category,
+        stock: p.stock,
+        status: (p.status ? "active" : "inactive") as "active" | "inactive",
+        image: resolveProductImage(p),
+        sales: p.sales || 0,
+        trend: "stable" as "up" | "down" | "stable",
+        isFavorite: p.isFavorite || false,
+        mercadoLivreId: p.mercadoLivreId || null,
+      }))
+      setProducts(mappedProducts)
+      
+      // Extrair categorias únicas dos produtos
+      const uniqueCategories = Array.from(
+        new Set(
+          mappedProducts
+            .map((p) => p.category)
+            .filter((cat): cat is string => Boolean(cat))
+        )
+      ).sort()
+      setAvailableCategories(uniqueCategories)
     } catch (err) {
       setError("Erro ao buscar produtos.")
       console.error('Erro ao carregar produtos:', err)
@@ -119,11 +138,25 @@ export default function ProductsPage() {
     loadProducts()
   }, [])
 
-  const filteredProducts = products.filter(
-    (product) =>
+  const filteredProducts = products.filter((product) => {
+    // Filtro de busca por nome ou categoria
+    const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      (product.category && product.category.toLowerCase().includes(searchTerm.toLowerCase()))
+    
+    // Filtro de status
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "active" && product.status === "active") ||
+      (statusFilter === "inactive" && product.status === "inactive")
+    
+    // Filtro de categoria
+    const matchesCategory =
+      categoryFilter === "all" ||
+      product.category === categoryFilter
+    
+    return matchesSearch && matchesStatus && matchesCategory
+  })
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -311,21 +344,57 @@ export default function ProductsPage() {
       {/* Search and Filters */}
       <Card className="border-0 shadow-lg shadow-slate-200/50">
         <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
-              <Input
-                type="text"
-                placeholder="Buscar produtos por nome ou categoria..."
-                className="pl-10 border-slate-300 focus:border-indigo-500 focus:ring-indigo-500"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+                <Input
+                  type="text"
+                  placeholder="Buscar produtos por nome ou categoria..."
+                  className="pl-10 border-slate-300 focus:border-indigo-500 focus:ring-indigo-500"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <Button variant="outline" className="border-slate-300">
+                <Filter className="mr-2 h-4 w-4" />
+                Filtros
+              </Button>
             </div>
-            <Button variant="outline" className="border-slate-300">
-              <Filter className="mr-2 h-4 w-4" />
-              Filtros
-            </Button>
+            
+            {/* Filtros de Status e Categoria */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">Status</label>
+                <Select value={statusFilter} onValueChange={(value: "all" | "active" | "inactive") => setStatusFilter(value)}>
+                  <SelectTrigger className="border-slate-300">
+                    <SelectValue placeholder="Selecione o status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="active">Ativos</SelectItem>
+                    <SelectItem value="inactive">Inativos</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">Categoria</label>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="border-slate-300">
+                    <SelectValue placeholder="Selecione a categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas</SelectItem>
+                    {availableCategories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
