@@ -100,6 +100,8 @@ export default function ProductsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<Product | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false)
+  const [bulkDeleting, setBulkDeleting] = useState(false)
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
@@ -357,6 +359,84 @@ export default function ProductsPage() {
     setProductToDelete(null)
   }
 
+  const handleBulkDeleteClick = () => {
+    if (selectedProductIds.size > 0) {
+      setBulkDeleteDialogOpen(true)
+    }
+  }
+
+  const handleBulkDeleteConfirm = async () => {
+    if (selectedProductIds.size === 0) return
+
+    setBulkDeleting(true)
+    setError(null)
+
+    const productIdsArray = Array.from(selectedProductIds)
+    const deletedIds: number[] = []
+    const failedIds: number[] = []
+
+    try {
+      // Deletar produtos em paralelo
+      const deletePromises = productIdsArray.map(async (productId) => {
+        try {
+          await apiClient.deleteProduct(productId)
+          deletedIds.push(productId)
+        } catch (err) {
+          console.error(`Erro ao deletar produto ${productId}:`, err)
+          failedIds.push(productId)
+        }
+      })
+
+      await Promise.all(deletePromises)
+
+      // Remover produtos deletados da lista local
+      setProducts(prevProducts => 
+        prevProducts.filter(p => !deletedIds.includes(p.id))
+      )
+
+      // Limpar seleção
+      setSelectedProductIds(new Set())
+
+      // Fechar modal
+      setBulkDeleteDialogOpen(false)
+
+      // Mostrar toast com resultado
+      if (failedIds.length === 0) {
+        toast({
+          title: "Produtos deletados com sucesso",
+          description: `${deletedIds.length} ${deletedIds.length === 1 ? 'produto foi deletado' : 'produtos foram deletados'} com sucesso.`,
+        })
+      } else {
+        toast({
+          title: "Exclusão parcial",
+          description: `${deletedIds.length} ${deletedIds.length === 1 ? 'produto foi deletado' : 'produtos foram deletados'}, mas ${failedIds.length} ${failedIds.length === 1 ? 'falhou' : 'falharam'}.`,
+          variant: "destructive",
+        })
+      }
+
+      // Recarregar a lista para garantir sincronização
+      setTimeout(() => {
+        loadProducts()
+        loadStats()
+      }, 500)
+
+    } catch (err) {
+      console.error('Erro ao deletar produtos em massa:', err)
+      setError("Erro ao deletar produtos. Tente novamente.")
+      toast({
+        title: "Erro ao deletar produtos",
+        description: "Ocorreu um erro ao deletar os produtos. Tente novamente.",
+        variant: "destructive",
+      })
+    } finally {
+      setBulkDeleting(false)
+    }
+  }
+
+  const handleBulkDeleteCancel = () => {
+    setBulkDeleteDialogOpen(false)
+  }
+
   const handleToggleFavorite = async (product: Product) => {
     try {
       const updatedProduct = await apiClient.toggleFavorite(product.id)
@@ -577,6 +657,17 @@ export default function ProductsPage() {
                 )}
               </div>
               <div className="flex items-center gap-2">
+                {selectedProductIds.size > 0 && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleBulkDeleteClick}
+                    disabled={bulkDeleting}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    {bulkDeleting ? "Deletando..." : `Deletar ${selectedProductIds.size} ${selectedProductIds.size === 1 ? 'produto' : 'produtos'}`}
+                  </Button>
+                )}
                 {areAllVisibleSelected ? (
                   <Button
                     variant="outline"
@@ -841,6 +932,29 @@ export default function ProductsPage() {
               className="bg-red-600 hover:bg-red-700"
             >
               {deleting ? "Excluindo..." : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Modal de Confirmação de Delete em Massa */}
+      <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão em massa</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza de que deseja excluir {selectedProductIds.size} {selectedProductIds.size === 1 ? 'produto selecionado' : 'produtos selecionados'}? 
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleBulkDeleteCancel}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleBulkDeleteConfirm}
+              disabled={bulkDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {bulkDeleting ? "Excluindo..." : "Excluir"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
