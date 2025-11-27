@@ -104,6 +104,7 @@ export default function ProductsPage() {
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [availableCategories, setAvailableCategories] = useState<string[]>([])
+  const [loadingCategories, setLoadingCategories] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalProducts, setTotalProducts] = useState(0)
@@ -176,7 +177,9 @@ export default function ProductsPage() {
           
           const matchesCategory =
             categoryFilter === "all" ||
-            product.category === categoryFilter
+            (categoryFilter === "sem-categoria" 
+              ? !product.category || product.category.trim() === "" || product.category === "Sem categoria"
+              : product.category === categoryFilter)
           
           return matchesSearch && matchesStatus && matchesCategory
         })
@@ -194,20 +197,37 @@ export default function ProductsPage() {
         setTotalLowStockProducts(lowStockCount)
       }
       
-      // Extrair categorias únicas dos produtos (usar todos os produtos, não apenas os filtrados)
-      const uniqueCategories = Array.from(
-        new Set(
-          mappedProducts
-            .map((p) => p.category)
-            .filter((cat): cat is string => Boolean(cat))
-        )
-      ).sort()
-      setAvailableCategories(uniqueCategories)
+      // Não extrair categorias dos produtos aqui - elas são carregadas separadamente
     } catch (err) {
       setError("Erro ao buscar produtos.")
       console.error('Erro ao carregar produtos:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Carregar categorias da API
+  const loadCategories = async () => {
+    setLoadingCategories(true)
+    try {
+      const categories = await apiClient.getCategoriesFlat()
+      if (Array.isArray(categories)) {
+        // Filtrar apenas categorias ativas e mapear para o nome
+        const activeCategoryNames = categories
+          .filter((cat) => cat.status !== false)
+          .map((cat) => cat.name)
+          .sort()
+        setAvailableCategories(activeCategoryNames)
+      }
+    } catch (err) {
+      console.error('Erro ao carregar categorias:', err)
+      toast({
+        title: "Erro ao carregar categorias",
+        description: "Não foi possível carregar as categorias cadastradas.",
+        variant: "destructive",
+      })
+    } finally {
+      setLoadingCategories(false)
     }
   }
 
@@ -224,6 +244,11 @@ export default function ProductsPage() {
       console.error('Erro ao carregar estatísticas:', err)
     }
   }
+
+  // Carregar categorias quando o componente montar
+  useEffect(() => {
+    loadCategories()
+  }, [])
 
   useEffect(() => {
     const hasActiveFilters = searchTerm.trim() !== "" || statusFilter !== "all" || categoryFilter !== "all"
@@ -523,6 +548,7 @@ export default function ProductsPage() {
                         {category}
                       </SelectItem>
                     ))}
+                    <SelectItem value="sem-categoria">Sem categoria</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
