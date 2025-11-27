@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Plus,
   Search,
@@ -108,6 +109,7 @@ export default function ProductsPage() {
   const [totalProducts, setTotalProducts] = useState(0)
   const [totalActiveProducts, setTotalActiveProducts] = useState(0)
   const [totalLowStockProducts, setTotalLowStockProducts] = useState(0)
+  const [selectedProductIds, setSelectedProductIds] = useState<Set<number>>(new Set())
   const itemsPerPage = 30
   const { toast } = useToast()
 
@@ -290,6 +292,13 @@ export default function ProductsPage() {
         return newProducts
       })
       
+      // Remove o produto da seleção se estiver selecionado
+      setSelectedProductIds(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(productToDelete.id)
+        return newSet
+      })
+      
       // Fechar o modal
       setDeleteDialogOpen(false)
       setProductToDelete(null)
@@ -351,6 +360,43 @@ export default function ProductsPage() {
       })
     }
   }
+
+  // Funções de seleção múltipla
+  const handleToggleSelection = (productId: number) => {
+    setSelectedProductIds(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(productId)) {
+        newSet.delete(productId)
+      } else {
+        newSet.add(productId)
+      }
+      return newSet
+    })
+  }
+
+  const handleSelectAll = () => {
+    const visibleProductIds = filteredProducts.map(p => p.id)
+    setSelectedProductIds(prev => {
+      const newSet = new Set(prev)
+      visibleProductIds.forEach(id => newSet.add(id))
+      return newSet
+    })
+  }
+
+  const handleDeselectAll = () => {
+    const visibleProductIds = filteredProducts.map(p => p.id)
+    setSelectedProductIds(prev => {
+      const newSet = new Set(prev)
+      visibleProductIds.forEach(id => newSet.delete(id))
+      return newSet
+    })
+  }
+
+  // Verificar se todos os produtos visíveis estão selecionados
+  const areAllVisibleSelected = filteredProducts.length > 0 && filteredProducts.every(p => selectedProductIds.has(p.id))
+  
+  // Contar produtos selecionados visíveis
+  const selectedVisibleCount = filteredProducts.filter(p => selectedProductIds.has(p.id)).length
 
   return (
     <div className="space-y-8">
@@ -485,6 +531,51 @@ export default function ProductsPage() {
         </CardContent>
       </Card>
 
+      {/* Barra de Ações de Seleção */}
+      {!loading && filteredProducts.length > 0 && (
+        <Card className="border-0 shadow-lg shadow-slate-200/50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                {selectedProductIds.size > 0 ? (
+                  <p className="text-sm font-medium text-slate-700">
+                    {selectedProductIds.size} {selectedProductIds.size === 1 ? 'produto selecionado' : 'produtos selecionados'}
+                    {selectedVisibleCount !== selectedProductIds.size && (
+                      <span className="text-slate-500 ml-1">
+                        ({selectedVisibleCount} {selectedVisibleCount === 1 ? 'visível' : 'visíveis'})
+                      </span>
+                    )}
+                  </p>
+                ) : (
+                  <p className="text-sm text-slate-500">Nenhum produto selecionado</p>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {areAllVisibleSelected ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-slate-300"
+                    onClick={handleDeselectAll}
+                  >
+                    Deselecionar Todos
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-slate-300"
+                    onClick={handleSelectAll}
+                  >
+                    Selecionar Todos
+                  </Button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Products List */}
       {loading && (
         <Card className="border-0 shadow-lg shadow-slate-200/50">
@@ -511,6 +602,14 @@ export default function ProductsPage() {
             >
               <CardContent className="p-6">
                 <div className="flex items-center space-x-6">
+                  {/* Checkbox de Seleção */}
+                  <div className="flex-shrink-0">
+                    <Checkbox
+                      checked={selectedProductIds.has(product.id)}
+                      onCheckedChange={() => handleToggleSelection(product.id)}
+                    />
+                  </div>
+                  
                   {/* Product Image */}
                   <div className="flex-shrink-0">
                     <img
