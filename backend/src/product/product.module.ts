@@ -7,11 +7,12 @@ import { ProductController } from './product.controller'
 import { UploadsModule } from '../uploads/uploads.module'
 import { Category } from '../category/entities/category.entity'
 import { ProductVariantItem } from './entities/product-variant-item.entity'
+import { XlsxParserService } from './xlsx-parser.service'
 
 @Module({
   imports: [TypeOrmModule.forFeature([Product, ProductVariation, ProductVariantItem, Category]), UploadsModule],
   controllers: [ProductController],
-  providers: [ProductService],
+  providers: [ProductService, XlsxParserService],
   exports: [ProductService],
 })
 export class ProductModule {}

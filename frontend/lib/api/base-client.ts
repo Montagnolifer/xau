@@ -124,26 +124,63 @@ export class BaseApiClient {
   ): Promise<T> {
     const token = this.getAuthToken();
     if (!token) {
-      throw new Error('Token de autenticação não encontrado');
+      throw new Error('Token de autenticação não encontrado. Por favor, faça login novamente.');
     }
 
     const url = `${this.baseUrl}${endpoint}`;
     
+    // Criar headers sem Content-Type para FormData (o navegador define automaticamente)
+    const headers: HeadersInit = {
+      'Authorization': `Bearer ${token}`,
+    };
+    
+    // Adicionar outros headers se fornecidos, mas não Content-Type
+    if (options.headers) {
+      Object.entries(options.headers).forEach(([key, value]) => {
+        if (key.toLowerCase() !== 'content-type') {
+          headers[key] = value as string;
+        }
+      });
+    }
+    
     const response = await fetch(url, {
       method: options.method || 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        ...options.headers,
-      },
+      headers,
       body: formData,
-      ...options,
+      ...Object.fromEntries(
+        Object.entries(options).filter(([key]) => key !== 'headers' && key !== 'body' && key !== 'method')
+      ),
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      let errorMessage = `Erro HTTP ${response.status}`;
+      
+      if (response.status === 401) {
+        errorMessage = 'Não autorizado. Por favor, faça login novamente.';
+      } else {
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch {
+          const text = await response.text().catch(() => '');
+          if (text) {
+            errorMessage = text;
+          }
+        }
+      }
+      
+      throw new Error(errorMessage);
     }
 
-    return await response.json();
+    // Tentar fazer parse do JSON apenas se houver conteúdo
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      const text = await response.text();
+      if (text && text.trim()) {
+        return JSON.parse(text);
+      }
+    }
+    
+    return undefined as T;
   }
 } 

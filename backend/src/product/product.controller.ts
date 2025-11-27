@@ -1,12 +1,13 @@
-import { Controller, Post, Body, UploadedFiles, UseInterceptors, Get, Delete, Param, Put, BadRequestException, UseGuards, Req } from '@nestjs/common'
+import { Controller, Post, Body, UploadedFiles, UseInterceptors, Get, Delete, Param, Put, BadRequestException, UseGuards, Req, Res, UploadedFile } from '@nestjs/common'
 import { ProductService } from './product.service'
 import { CreateProductDto } from './dto/create-product.dto'
 import { Product } from './entities/product.entity'
-import { FileFieldsInterceptor } from '@nestjs/platform-express'
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express'
 import * as multer from 'multer'
 import { extname } from 'path'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
-import { Request } from 'express'
+import { Request, Response } from 'express'
+import { XlsxParserService } from './xlsx-parser.service'
 
 function generateUniqueFilename(originalname: string) {
   const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`
@@ -15,7 +16,10 @@ function generateUniqueFilename(originalname: string) {
 
 @Controller('products')
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(
+    private readonly productService: ProductService,
+    private readonly xlsxParserService: XlsxParserService,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -349,5 +353,85 @@ export class ProductController {
   @Get('favorites/list')
   async getFavorites() {
     return this.productService.getFavorites();
+  }
+
+  @Get('import-template')
+  async downloadTemplate(@Res() res: Response) {
+    try {
+      const templateBuffer = this.xlsxParserService.generateTemplate()
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      res.setHeader('Content-Disposition', 'attachment; filename=template-importacao-produtos.xlsx')
+      res.send(templateBuffer)
+    } catch (error) {
+      throw new BadRequestException('Erro ao gerar template: ' + (error?.message || 'Erro desconhecido'))
+    }
+  }
+
+  @Post('import-xlsx')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: multer.memoryStorage(),
+      fileFilter: (req, file, cb) => {
+        const allowedMimes = [
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'application/vnd.ms-excel',
+        ]
+        const allowedExtensions = ['.xlsx', '.xls']
+        const ext = extname(file.originalname).toLowerCase()
+
+        if (
+          allowedMimes.includes(file.mimetype) ||
+          allowedExtensions.includes(ext)
+        ) {
+          cb(null, true)
+        } else {
+          cb(new BadRequestException('Apenas arquivos Excel (.xlsx, .xls) são permitidos'), false)
+        }
+      },
+      limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB
+      },
+    })
+  )
+  async importFromXlsx(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Arquivo não fornecido')
+    }
+
+    try {
+      const products = this.xlsxParserService.parseFile(file.buffer)
+      
+      if (products.length === 0) {
+        throw new BadRequestException('Nenhum produto válido encontrado no arquivo')
+      }
+
+      const items = products.map((product, index) => ({
+        payload: product,
+        reference: `Linha ${index + 1}: ${product.name}`,
+      }))
+
+      const results = await this.productService.importMany(items)
+
+      const successCount = results.filter((r) => r.success).length
+      const errorCount = results.filter((r) => !r.success).length
+
+      return {
+        total: results.length,
+        success: successCount,
+        failed: errorCount,
+        results: results.map((r) => ({
+          reference: r.reference,
+          success: r.success,
+          productId: r.product?.id,
+          error: r.error,
+        })),
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error
+      }
+      throw new BadRequestException('Erro ao importar produtos: ' + (error?.message || 'Erro desconhecido'))
+    }
   }
 } 

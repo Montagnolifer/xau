@@ -17,6 +17,7 @@ import {
   TrendingUp,
   AlertTriangle,
   Star,
+  Upload,
 } from "lucide-react"
 import Link from "next/link"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -33,6 +34,7 @@ import {
 import { apiClient } from "@/lib/api"
 import { config } from "@/lib/config"
 import { useToast } from "@/hooks/use-toast"
+import { ImportProductsDialog } from "./components/import-products-dialog"
 
 interface Product {
   id: number
@@ -81,6 +83,7 @@ export default function ProductsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<Product | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [importDialogOpen, setImportDialogOpen] = useState(false)
   const { toast } = useToast()
 
   const loadProducts = async () => {
@@ -238,12 +241,22 @@ export default function ProductsPage() {
           <h1 className="text-3xl font-bold text-slate-900">Produtos</h1>
           <p className="text-slate-600 mt-1">Gerencie seu catálogo de produtos</p>
         </div>
-        <Link href="/admin/produtos/novo">
-          <Button className="mt-4 sm:mt-0 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-500/25">
-            <Plus className="mr-2 h-4 w-4" />
-            Novo Produto
+        <div className="flex gap-3 mt-4 sm:mt-0">
+          <Button
+            variant="outline"
+            className="border-slate-300"
+            onClick={() => setImportDialogOpen(true)}
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            Importar Produtos
           </Button>
-        </Link>
+          <Link href="/admin/produtos/novo">
+            <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-500/25">
+              <Plus className="mr-2 h-4 w-4" />
+              Novo Produto
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -479,6 +492,15 @@ export default function ProductsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Modal de Importação */}
+      <ImportProductsDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        onSuccess={() => {
+          loadProducts()
+        }}
+      />
     </div>
   )
 }
