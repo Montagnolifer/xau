@@ -42,6 +42,15 @@ import { apiClient } from "@/lib/api"
 import { config } from "@/lib/config"
 import { useToast } from "@/hooks/use-toast"
 import { ImportProductsDialog } from "./components/import-products-dialog"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 interface Product {
   id: number
@@ -94,13 +103,47 @@ export default function ProductsPage() {
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [availableCategories, setAvailableCategories] = useState<string[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalProducts, setTotalProducts] = useState(0)
+  const [totalActiveProducts, setTotalActiveProducts] = useState(0)
+  const [totalLowStockProducts, setTotalLowStockProducts] = useState(0)
+  const itemsPerPage = 30
   const { toast } = useToast()
 
-  const loadProducts = async () => {
+  const loadProducts = async (page: number = currentPage) => {
+    // Verificar se há filtros ativos
+    const hasActiveFilters = searchTerm.trim() !== "" || statusFilter !== "all" || categoryFilter !== "all"
     setLoading(true)
     setError(null)
     try {
-      const data = await apiClient.getProducts()
+      // Se há filtros ativos, carregar todos os produtos (sem paginação)
+      // Caso contrário, usar paginação
+      const response = hasActiveFilters
+        ? await apiClient.getProducts() // Sem paginação quando há filtros
+        : await apiClient.getProducts(page, itemsPerPage) // Com paginação quando não há filtros
+      
+      // Verificar se é resposta paginada ou array simples (compatibilidade)
+      let data: any[]
+      let total = 0
+      let totalPagesCount = 1
+      
+      if (response && typeof response === 'object' && 'data' in response && !hasActiveFilters) {
+        // Resposta paginada (apenas quando não há filtros)
+        data = response.data
+        total = response.total
+        totalPagesCount = response.totalPages
+        setTotalPages(response.totalPages)
+        setTotalProducts(response.total)
+      } else {
+        // Array simples (quando há filtros ou fallback para compatibilidade)
+        data = Array.isArray(response) ? response : []
+        total = data.length
+        totalPagesCount = 1
+        setTotalPages(1)
+        setTotalProducts(data.length)
+      }
+      
       const mappedProducts: Product[] = data.map((p: any) => ({
         id: p.id,
         name: p.name,
@@ -115,9 +158,41 @@ export default function ProductsPage() {
         isFavorite: p.isFavorite || false,
         mercadoLivreId: p.mercadoLivreId || null,
       }))
-      setProducts(mappedProducts)
       
-      // Extrair categorias únicas dos produtos
+      // Se há filtros, aplicar filtros no frontend
+      let filteredMappedProducts = mappedProducts
+      if (hasActiveFilters) {
+        filteredMappedProducts = mappedProducts.filter((product) => {
+          const matchesSearch =
+            product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (product.category && product.category.toLowerCase().includes(searchTerm.toLowerCase()))
+          
+          const matchesStatus =
+            statusFilter === "all" ||
+            (statusFilter === "active" && product.status === "active") ||
+            (statusFilter === "inactive" && product.status === "inactive")
+          
+          const matchesCategory =
+            categoryFilter === "all" ||
+            product.category === categoryFilter
+          
+          return matchesSearch && matchesStatus && matchesCategory
+        })
+      }
+      
+      setProducts(filteredMappedProducts)
+      
+      // Calcular estatísticas dos produtos da página atual
+      const activeCount = filteredMappedProducts.filter((p) => p.status === "active").length
+      const lowStockCount = filteredMappedProducts.filter((p) => p.stock <= 10 && p.stock > 0).length
+      
+      // Se não temos dados paginados, usar contagem local
+      if (!(response && typeof response === 'object' && 'data' in response && !hasActiveFilters)) {
+        setTotalActiveProducts(activeCount)
+        setTotalLowStockProducts(lowStockCount)
+      }
+      
+      // Extrair categorias únicas dos produtos (usar todos os produtos, não apenas os filtrados)
       const uniqueCategories = Array.from(
         new Set(
           mappedProducts
@@ -134,29 +209,40 @@ export default function ProductsPage() {
     }
   }
 
-  useEffect(() => {
-    loadProducts()
-  }, [])
+  // Carregar estatísticas gerais (sem paginação)
+  const loadStats = async () => {
+    try {
+      const allProducts = await apiClient.getProducts() as any[]
+      if (Array.isArray(allProducts)) {
+        setTotalProducts(allProducts.length)
+        setTotalActiveProducts(allProducts.filter((p: any) => p.status).length)
+        setTotalLowStockProducts(allProducts.filter((p: any) => p.stock <= 10 && p.stock > 0).length)
+      }
+    } catch (err) {
+      console.error('Erro ao carregar estatísticas:', err)
+    }
+  }
 
-  const filteredProducts = products.filter((product) => {
-    // Filtro de busca por nome ou categoria
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (product.category && product.category.toLowerCase().includes(searchTerm.toLowerCase()))
-    
-    // Filtro de status
-    const matchesStatus =
-      statusFilter === "all" ||
-      (statusFilter === "active" && product.status === "active") ||
-      (statusFilter === "inactive" && product.status === "inactive")
-    
-    // Filtro de categoria
-    const matchesCategory =
-      categoryFilter === "all" ||
-      product.category === categoryFilter
-    
-    return matchesSearch && matchesStatus && matchesCategory
-  })
+  useEffect(() => {
+    const hasActiveFilters = searchTerm.trim() !== "" || statusFilter !== "all" || categoryFilter !== "all"
+    loadProducts(currentPage)
+    // Carregar estatísticas apenas quando não há filtros
+    if (!hasActiveFilters) {
+      loadStats()
+    }
+  }, [currentPage, searchTerm, statusFilter, categoryFilter])
+
+  // Resetar para página 1 quando filtros mudarem (apenas se não houver filtros)
+  useEffect(() => {
+    const hasActiveFilters = searchTerm.trim() !== "" || statusFilter !== "all" || categoryFilter !== "all"
+    if (!hasActiveFilters && currentPage !== 1) {
+      setCurrentPage(1)
+    }
+  }, [searchTerm, statusFilter, categoryFilter])
+
+  // Se não há filtros ativos, os produtos já vêm paginados do backend
+  // Se há filtros ativos, os produtos já foram filtrados no loadProducts
+  const filteredProducts = products
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -299,7 +385,7 @@ export default function ProductsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600">Total de Produtos</p>
-                <p className="text-2xl font-bold text-slate-900">{products.length}</p>
+                <p className="text-2xl font-bold text-slate-900">{totalProducts}</p>
               </div>
               <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
                 <Package className="h-6 w-6 text-white" />
@@ -314,7 +400,7 @@ export default function ProductsPage() {
               <div>
                 <p className="text-sm font-medium text-slate-600">Produtos Ativos</p>
                 <p className="text-2xl font-bold text-slate-900">
-                  {products.filter((p) => p.status === "active").length}
+                  {totalActiveProducts}
                 </p>
               </div>
               <div className="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl">
@@ -330,7 +416,7 @@ export default function ProductsPage() {
               <div>
                 <p className="text-sm font-medium text-slate-600">Estoque Baixo</p>
                 <p className="text-2xl font-bold text-slate-900">
-                  {products.filter((p) => p.stock <= 10 && p.stock > 0).length}
+                  {totalLowStockProducts}
                 </p>
               </div>
               <div className="p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl">
@@ -523,7 +609,7 @@ export default function ProductsPage() {
         })}
       </div>
 
-      {filteredProducts.length === 0 && (
+      {filteredProducts.length === 0 && !loading && (
         <Card className="border-0 shadow-lg shadow-slate-200/50">
           <CardContent className="p-12 text-center">
             <Package className="mx-auto h-12 w-12 text-slate-400 mb-4" />
@@ -537,6 +623,79 @@ export default function ProductsPage() {
             </Link>
           </CardContent>
         </Card>
+      )}
+
+      {/* Paginação - mostrar apenas quando não há filtros ativos */}
+      {!loading && filteredProducts.length > 0 && totalPages > 1 && searchTerm.trim() === "" && statusFilter === "all" && categoryFilter === "all" && (
+        <div className="flex justify-center mt-6">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    if (currentPage > 1) {
+                      setCurrentPage(currentPage - 1)
+                      window.scrollTo({ top: 0, behavior: 'smooth' })
+                    }
+                  }}
+                  className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                />
+              </PaginationItem>
+              
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                // Mostrar primeira página, última página, página atual e páginas adjacentes
+                if (
+                  page === 1 ||
+                  page === totalPages ||
+                  (page >= currentPage - 1 && page <= currentPage + 1)
+                ) {
+                  return (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          setCurrentPage(page)
+                          window.scrollTo({ top: 0, behavior: 'smooth' })
+                        }}
+                        isActive={currentPage === page}
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  )
+                } else if (
+                  page === currentPage - 2 ||
+                  page === currentPage + 2
+                ) {
+                  return (
+                    <PaginationItem key={page}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )
+                }
+                return null
+              })}
+              
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    if (currentPage < totalPages) {
+                      setCurrentPage(currentPage + 1)
+                      window.scrollTo({ top: 0, behavior: 'smooth' })
+                    }
+                  }}
+                  className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
       )}
 
       {/* Modal de Confirmação de Delete */}

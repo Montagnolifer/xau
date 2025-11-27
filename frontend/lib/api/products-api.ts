@@ -1,8 +1,23 @@
 import { BaseApiClient } from './base-client';
 
+export interface PaginatedProductsResponse {
+  data: any[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+}
+
 export class ProductsApi extends BaseApiClient {
-  async getProducts(): Promise<any[]> {
-    return this.request<any[]>('/products');
+  async getProducts(page?: number, limit?: number): Promise<any[] | PaginatedProductsResponse> {
+    if (page !== undefined && limit !== undefined) {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+      })
+      return this.request<PaginatedProductsResponse>(`/products?${params.toString()}`)
+    }
+    return this.request<any[]>('/products')
   }
 
   async getProduct(id: number): Promise<any> {

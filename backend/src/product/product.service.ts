@@ -288,6 +288,33 @@ export class ProductService {
     })
   }
 
+  async findAllPaginated(page: number, limit: number): Promise<{
+    data: Product[]
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+  }> {
+    const skip = (page - 1) * limit
+
+    const [data, total] = await this.productRepository.findAndCount({
+      relations: ['variations', 'variantItems', 'categoryEntity'],
+      order: { id: 'DESC' },
+      skip,
+      take: limit,
+    })
+
+    const totalPages = Math.ceil(total / limit)
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages,
+    }
+  }
+
   async findOne(id: number): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },

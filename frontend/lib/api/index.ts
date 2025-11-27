@@ -47,8 +47,8 @@ export class ApiClient extends BaseApiClient {
   }
 
   // Métodos de produtos
-  async getProducts(): Promise<any[]> {
-    return productsApi.getProducts();
+  async getProducts(page?: number, limit?: number): Promise<any[] | any> {
+    return productsApi.getProducts(page, limit);
   }
 
   async getProduct(id: number): Promise<any> {

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UploadedFiles, UseInterceptors, Get, Delete, Param, Put, BadRequestException, UseGuards, Req, Res, UploadedFile } from '@nestjs/common'
+import { Controller, Post, Body, UploadedFiles, UseInterceptors, Get, Delete, Param, Put, BadRequestException, UseGuards, Req, Res, UploadedFile, Query } from '@nestjs/common'
 import { ProductService } from './product.service'
 import { CreateProductDto } from './dto/create-product.dto'
 import { Product } from './entities/product.entity'
@@ -177,8 +177,28 @@ export class ProductController {
   }
 
   @Get()
-  async findAll() {
-    return this.productService.findAll();
+  async findAll(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    // Se não houver parâmetros de paginação, retornar todos os produtos (compatibilidade)
+    if (!page && !limit) {
+      return this.productService.findAll();
+    }
+
+    // Converter para números com valores padrão
+    const pageNum = page ? parseInt(page, 10) : 1;
+    const limitNum = limit ? parseInt(limit, 10) : 30;
+
+    // Validar valores
+    if (isNaN(pageNum) || pageNum < 1) {
+      throw new BadRequestException('Parâmetro page deve ser um número maior que 0');
+    }
+    if (isNaN(limitNum) || limitNum < 1) {
+      throw new BadRequestException('Parâmetro limit deve ser um número maior que 0');
+    }
+
+    return this.productService.findAllPaginated(pageNum, limitNum);
   }
 
   @Get(':id')
